@@ -129,19 +129,38 @@ with tab2:
         st.info("No responses collected yet. Share the form above to start collecting data.")
         
         # Option to add sample data for testing
-        if st.button("Generate Sample Data for Testing"):
-            with st.spinner("Generating sample responses..."):
-                sample_data = generate_sample_responses(questionnaire)
-                
-                # Create table and insert sample data
-                db_client = DatabaseClient()
-                table_name = db_client.create_survey_table(questionnaire)
-                
-                for sample in sample_data:
-                    db_client.submit_survey_response(table_name, sample)
-                
-                st.success(f"Generated {len(sample_data)} sample responses!")
-                st.rerun()
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("Generate Sample Data for Testing", type="primary"):
+                with st.spinner("Generating realistic sample responses..."):
+                    sample_data = generate_sample_responses(questionnaire)
+                    
+                    # Create table and insert sample data
+                    db_client = DatabaseClient()
+                    table_name = db_client.create_survey_table(questionnaire)
+                    
+                    for sample in sample_data:
+                        db_client.submit_survey_response(table_name, sample)
+                    
+                    st.success(f"Generated {len(sample_data)} realistic sample responses!")
+                    st.rerun()
+        
+        with col2:
+            if st.button("Clear All Data"):
+                if st.session_state.get('confirm_clear'):
+                    # Clear data
+                    db_client = DatabaseClient()
+                    table_name = f"survey_{questionnaire.get('id', 'default')}"
+                    if db_client.table_exists(table_name):
+                        db_client.clear_survey_responses(table_name)
+                        st.success("All data cleared!")
+                        st.session_state.confirm_clear = False
+                        st.rerun()
+                else:
+                    st.session_state.confirm_clear = True
+                    st.warning("Click again to confirm data deletion")
+                    st.rerun()
 
 with tab3:
     st.header("Data Export & Integration")
@@ -201,45 +220,124 @@ with tab3:
 
 # Utility function for sample data generation
 def generate_sample_responses(questionnaire):
-    """Generate sample responses for testing"""
+    """Generate realistic sample responses for testing"""
     import random
     from datetime import datetime, timedelta
     
+    # Realistic sample data pools
+    names = ["Alice Johnson", "Bob Smith", "Carol Davis", "David Wilson", "Emma Brown", 
+             "Frank Miller", "Grace Lee", "Henry Taylor", "Iris Garcia", "Jack Martinez"]
+    
+    companies = ["TechCorp", "DataFlow Inc", "Innovation Labs", "Future Systems", "NextGen Solutions",
+                "Global Dynamics", "Smart Industries", "Digital Ventures", "CloudTech", "AI Innovations"]
+    
+    departments = ["Marketing", "Sales", "Engineering", "HR", "Finance", "Operations", "IT", "Customer Service"]
+    
+    satisfaction_responses = ["Very Satisfied", "Satisfied", "Neutral", "Dissatisfied", "Very Dissatisfied"]
+    
+    text_responses = [
+        "The new system has improved our productivity significantly",
+        "We need better training on the new processes",
+        "Great initiative, looking forward to more improvements",
+        "The interface could be more user-friendly",
+        "Excellent results so far, team is very happy",
+        "Some minor issues but overall positive experience",
+        "Would like to see more customization options",
+        "The implementation went smoother than expected"
+    ]
+    
     sample_responses = []
     
-    for i in range(5):  # Generate 5 sample responses
+    for i in range(15):  # Generate 15 sample responses for better analysis
         response = {}
         
-        for question in questionnaire.get('questions', []):
-            question_id = question['id']
-            question_type = question['type']
+        for j, question in enumerate(questionnaire.get('questions', [])):
+            question_id = question.get('id', f"question_{j+1}")
+            question_type = question.get('type', question.get('question_type', 'text'))
+            question_text = question.get('text', question.get('question', question.get('question_text', ''))).lower()
             
+            # Generate contextual responses based on question content
             if question_type == 'text':
-                response[question_id] = f"Sample text response {i+1}"
+                if 'name' in question_text:
+                    response[question_id] = random.choice(names)
+                elif 'company' in question_text or 'organization' in question_text:
+                    response[question_id] = random.choice(companies)
+                elif 'department' in question_text:
+                    response[question_id] = random.choice(departments)
+                elif 'feedback' in question_text or 'comment' in question_text or 'suggestion' in question_text:
+                    response[question_id] = random.choice(text_responses)
+                else:
+                    response[question_id] = f"Sample response {i+1}: " + random.choice(text_responses[:3])
+                    
             elif question_type == 'email':
-                response[question_id] = f"user{i+1}@example.com"
+                name_part = random.choice(names).lower().replace(' ', '.')
+                domain = random.choice(['company.com', 'business.org', 'corp.net'])
+                response[question_id] = f"{name_part}@{domain}"
+                
             elif question_type == 'number':
                 min_val = question.get('min', 1)
                 max_val = question.get('max', 100)
-                response[question_id] = random.randint(min_val, max_val)
+                if 'age' in question_text:
+                    response[question_id] = random.randint(22, 65)
+                elif 'year' in question_text or 'experience' in question_text:
+                    response[question_id] = random.randint(1, 20)
+                elif 'salary' in question_text or 'income' in question_text:
+                    response[question_id] = random.randint(40000, 150000)
+                else:
+                    response[question_id] = random.randint(min_val, max_val)
+                    
             elif question_type == 'rating':
                 max_rating = question.get('max', 5)
-                response[question_id] = random.randint(1, max_rating)
+                # Weight towards positive responses for satisfaction questions
+                if 'satisfaction' in question_text or 'happy' in question_text:
+                    response[question_id] = random.choices(
+                        range(1, max_rating + 1),
+                        weights=[10, 15, 25, 30, 20]  # Weighted towards higher ratings
+                    )[0]
+                else:
+                    response[question_id] = random.randint(1, max_rating)
+                    
             elif question_type == 'select':
-                options = question.get('options', ['Option 1', 'Option 2'])
-                response[question_id] = random.choice(options)
+                options = question.get('options', satisfaction_responses)
+                if 'satisfaction' in question_text:
+                    # Weight towards positive responses
+                    response[question_id] = random.choices(
+                        satisfaction_responses,
+                        weights=[5, 25, 15, 30, 25]
+                    )[0]
+                elif 'department' in question_text and departments[0] in str(options):
+                    response[question_id] = random.choice(departments)
+                else:
+                    response[question_id] = random.choice(options)
+                    
             elif question_type == 'multiselect':
                 options = question.get('options', ['Option 1', 'Option 2', 'Option 3'])
-                selected = random.sample(options, random.randint(1, min(2, len(options))))
-                response[question_id] = selected
+                num_selections = random.randint(1, min(3, len(options)))
+                response[question_id] = random.sample(options, num_selections)
+                
             elif question_type == 'boolean':
-                response[question_id] = random.choice([True, False])
+                # Weight towards True for positive questions
+                if 'recommend' in question_text or 'satisfied' in question_text:
+                    response[question_id] = random.choices([True, False], weights=[70, 30])[0]
+                else:
+                    response[question_id] = random.choice([True, False])
+                    
             elif question_type == 'date':
-                base_date = datetime.now() - timedelta(days=30)
-                random_days = random.randint(0, 30)
-                response[question_id] = (base_date + timedelta(days=random_days)).date().isoformat()
+                if 'birth' in question_text:
+                    # Generate birth dates for working age adults
+                    base_year = datetime.now().year - random.randint(25, 60)
+                    birth_date = datetime(base_year, random.randint(1, 12), random.randint(1, 28))
+                    response[question_id] = birth_date.date().isoformat()
+                elif 'start' in question_text or 'join' in question_text:
+                    # Generate start dates within last 10 years
+                    base_date = datetime.now() - timedelta(days=random.randint(30, 3650))
+                    response[question_id] = base_date.date().isoformat()
+                else:
+                    # Random date within last year
+                    base_date = datetime.now() - timedelta(days=random.randint(0, 365))
+                    response[question_id] = base_date.date().isoformat()
             else:
-                response[question_id] = f"Sample response {i+1}"
+                response[question_id] = f"Sample data {i+1}"
         
         sample_responses.append(response)
     

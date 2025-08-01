@@ -164,3 +164,18 @@ class DatabaseClient:
         except Exception as e:
             st.error(f"Failed to delete table: {str(e)}")
             return False
+    
+    def clear_survey_responses(self, table_name):
+        """Clear all responses from survey table"""
+        if not self.engine:
+            return False
+            
+        try:
+            with self.engine.connect() as conn:
+                conn.execute(text(f"DELETE FROM {table_name} WHERE id > 0"))
+                conn.commit()
+            return True
+            
+        except Exception as e:
+            st.error(f"Failed to clear survey responses: {str(e)}")
+            return False
