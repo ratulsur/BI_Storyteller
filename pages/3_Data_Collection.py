@@ -15,6 +15,39 @@ st.set_page_config(
 st.title("Data Collection")
 st.markdown("Create interactive forms and collect responses directly in the platform using PostgreSQL database.")
 
+# Quick sample data generation at the top
+st.markdown("### 🎯 Quick Start with Sample Data")
+col1, col2 = st.columns([3, 1])
+
+with col1:
+    st.markdown("Generate realistic sample responses instantly to test analysis features without manual data entry.")
+
+with col2:
+    if st.button("🚀 Generate Sample Data Now", type="primary", key="quick_sample"):
+        with st.spinner("Creating 15 realistic responses..."):
+            try:
+                sample_data = generate_sample_responses(questionnaire)
+                
+                # Create table and insert sample data
+                db_client = DatabaseClient()
+                table_name = db_client.create_survey_table(questionnaire)
+                
+                if table_name:
+                    success_count = 0
+                    for sample in sample_data:
+                        if db_client.submit_survey_response(table_name, sample):
+                            success_count += 1
+                    
+                    st.success(f"✅ Generated {success_count} sample responses! Check the Response Management tab.")
+                    st.balloons()
+                    st.rerun()
+                else:
+                    st.error("Failed to create database table")
+            except Exception as e:
+                st.error(f"Error generating sample data: {str(e)}")
+
+st.markdown("---")
+
 def generate_sample_responses(questionnaire):
     """Generate realistic sample responses for testing"""
     # Realistic sample data pools
@@ -195,9 +228,9 @@ with tab2:
     # Get response count
     response_count = form_generator.get_response_count(questionnaire)
     
-    # Debug info for troubleshooting
-    st.write(f"Debug: Response count = {response_count}, Type = {type(response_count)}")
-    st.write(f"Debug: Questionnaire ID = {questionnaire.get('id', 'default')}")
+    # Show current status
+    if response_count == 0:
+        st.info("💡 Tip: Use the 'Generate Sample Data Now' button at the top for instant testing data!")
     
     col1, col2, col3 = st.columns(3)
     
