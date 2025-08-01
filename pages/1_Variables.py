@@ -64,7 +64,7 @@ if st.session_state.variables:
                         with col1:
                             st.write(f"**Description:** {var['description']}")
                         with col2:
-                            st.badge(var['type'].title(), type="secondary")
+                            st.markdown(f"**{var['type'].title()}**")
     else:
         # Single type, display directly
         for var in st.session_state.variables:
@@ -73,7 +73,7 @@ if st.session_state.variables:
                 with col1:
                     st.write(f"**Description:** {var['description']}")
                 with col2:
-                    st.badge(var['type'].title(), type="secondary")
+                    st.markdown(f"**{var['type'].title()}**")
     
     # Edit variables section
     st.header("✏️ Edit Variables")
