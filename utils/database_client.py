@@ -39,9 +39,9 @@ class DatabaseClient:
             # Build CREATE TABLE SQL
             columns = ["id SERIAL PRIMARY KEY", "submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"]
             
-            for question in questionnaire_data.get('questions', []):
-                question_id = question['id']
-                question_type = question['type']
+            for i, question in enumerate(questionnaire_data.get('questions', [])):
+                question_id = question.get('id', f"question_{i+1}")
+                question_type = question.get('type', question.get('question_type', 'text'))
                 
                 if question_type in ['text', 'email']:
                     columns.append(f"{question_id} TEXT")

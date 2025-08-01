@@ -20,10 +20,10 @@ class FormGenerator:
         with st.form(key=f"survey_form_{questionnaire_data.get('id', 'default')}"):
             response_data = {}
             
-            for question in questionnaire_data['questions']:
-                question_id = question['id']
-                question_text = question['text']
-                question_type = question['type']
+            for i, question in enumerate(questionnaire_data['questions']):
+                question_id = question.get('id', f"question_{i+1}")
+                question_text = question.get('text', question.get('question', question.get('question_text', '')))
+                question_type = question.get('type', question.get('question_type', 'text'))
                 required = question.get('required', False)
                 
                 # Add required indicator
@@ -112,12 +112,13 @@ class FormGenerator:
             if submitted:
                 # Validate required fields
                 validation_errors = []
-                for question in questionnaire_data['questions']:
+                for i, question in enumerate(questionnaire_data['questions']):
                     if question.get('required', False):
-                        question_id = question['id']
+                        question_id = question.get('id', f"question_{i+1}")
                         value = response_data.get(question_id)
+                        question_text = question.get('text', question.get('question', question.get('question_text', '')))
                         if not value or (isinstance(value, str) and not value.strip()):
-                            validation_errors.append(f"'{question['text']}' is required")
+                            validation_errors.append(f"'{question_text}' is required")
                 
                 if validation_errors:
                     for error in validation_errors:
