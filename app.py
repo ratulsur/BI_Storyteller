@@ -110,7 +110,8 @@ workflow_steps = [
     "4. Data Preprocessing",
     "5. Analysis",
     "6. Dashboard",
-    "7. Chat"
+    "7. Presentation",
+    "8. Chat"
 ]
 
 for step in workflow_steps:
