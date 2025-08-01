@@ -9,7 +9,7 @@ from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 st.set_page_config(
-    page_title="Dashboard - AI Data Analysis Platform",
+    page_title="Dashboard - BI StoryTeller",
 
     layout="wide"
 )

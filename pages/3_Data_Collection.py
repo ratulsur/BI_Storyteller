@@ -4,7 +4,7 @@ import pandas as pd
 import io
 
 st.set_page_config(
-    page_title="Data Collection - AI Data Analysis Platform",
+    page_title="Data Collection - BI StoryTeller",
 
     layout="wide"
 )

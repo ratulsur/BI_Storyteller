@@ -1,6 +1,6 @@
 # Overview
 
-This is an AI-powered data analysis platform built with Streamlit that enables users to conduct comprehensive data analysis through a guided workflow. The platform starts with business problem definition, automatically extracts relevant variables, generates custom questionnaires, collects data via Google Sheets integration, processes and analyzes the data, and presents insights through interactive dashboards and AI chat assistance.
+BI StoryTeller is an AI-powered data analysis platform built with Streamlit that enables users to conduct comprehensive data analysis through a guided workflow. The platform starts with business problem definition, automatically extracts relevant variables, generates custom questionnaires, collects data via Google Sheets integration, processes and analyzes the data, and presents insights through interactive dashboards and AI chat assistance.
 
 The application follows a step-by-step methodology: problem definition → variable extraction → questionnaire generation → data collection → preprocessing → analysis → dashboard visualization → AI-powered chat insights. Each step builds upon the previous one, creating a seamless end-to-end data analysis pipeline.
 

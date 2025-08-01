@@ -3,7 +3,7 @@ from utils.questionnaire_generator import validate_questionnaire, generate_form_
 import json
 
 st.set_page_config(
-    page_title="Questionnaire - AI Data Analysis Platform",
+    page_title="Questionnaire - BI StoryTeller",
 
     layout="wide"
 )

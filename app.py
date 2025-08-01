@@ -7,7 +7,7 @@ from utils.visualizer import Visualizer
 
 # Page configuration
 st.set_page_config(
-    page_title="AI Data Analysis Platform",
+    page_title="BI StoryTeller",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -46,7 +46,7 @@ except Exception as e:
     st.stop()
 
 # Main page
-st.title("AI Data Analysis Platform")
+st.title("BI StoryTeller")
 st.markdown("Transform your business problems into actionable insights through AI-generated questionnaires and automated data analysis.")
 
 # Sidebar navigation

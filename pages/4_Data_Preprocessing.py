@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 st.set_page_config(
-    page_title="Data Preprocessing - AI Data Analysis Platform",
+    page_title="Data Preprocessing - BI StoryTeller",
 
     layout="wide"
 )

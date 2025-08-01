@@ -7,7 +7,7 @@ import plotly.express as px
 from scipy import stats
 
 st.set_page_config(
-    page_title="Analysis - AI Data Analysis Platform",
+    page_title="Analysis - BI StoryTeller",
 
     layout="wide"
 )

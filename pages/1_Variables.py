@@ -1,7 +1,7 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="Variables - AI Data Analysis Platform",
+    page_title="Variables - BI StoryTeller",
     layout="wide"
 )
 

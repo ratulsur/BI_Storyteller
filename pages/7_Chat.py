@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 
 st.set_page_config(
-    page_title="Chat - AI Data Analysis Platform",
+    page_title="Chat - BI StoryTeller",
 
     layout="wide"
 )
