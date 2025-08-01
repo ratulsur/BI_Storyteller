@@ -92,7 +92,7 @@ class PresentationGenerator:
             content = data_slide.placeholders[1]
             
             if title and hasattr(title, 'text_frame'):
-                title.text = "Data Overview"
+                title.text = "Dataset Overview"
             if content and hasattr(content, 'text_frame'):
                 data_info = f"""Dataset Statistics:
 • Total Records: {processed_data.shape[0]:,}
@@ -102,6 +102,55 @@ class PresentationGenerator:
                 content.text = data_info
             
             self._apply_template_styling(data_slide, template)
+            
+            # Data Quality Details slide
+            quality_slide = prs.slides.add_slide(prs.slide_layouts[1])
+            title = quality_slide.shapes.title
+            content = quality_slide.placeholders[1]
+            
+            if title and hasattr(title, 'text_frame'):
+                title.text = "Data Quality Assessment"
+            if content and hasattr(content, 'text_frame'):
+                missing_data = processed_data.isnull().sum()
+                top_missing = missing_data.head(5)
+                
+                quality_info = f"""Data Completeness Analysis:
+
+• Overall Data Completeness: {((1 - processed_data.isnull().sum().sum() / (processed_data.shape[0] * processed_data.shape[1])) * 100):.1f}%
+• Records with Complete Data: {len(processed_data.dropna()):,}
+• Variables with Missing Data: {(missing_data > 0).sum()}
+
+Top Variables by Completeness:
+{chr(10).join([f"• {col}: {((len(processed_data) - missing) / len(processed_data) * 100):.1f}% complete" for col, missing in top_missing.items()])}"""
+                content.text = quality_info
+            
+            self._apply_template_styling(quality_slide, template)
+            
+            # Variable Analysis slide
+            if processed_data.shape[1] > 5:
+                var_slide = prs.slides.add_slide(prs.slide_layouts[1])
+                title = var_slide.shapes.title
+                content = var_slide.placeholders[1]
+                
+                if title and hasattr(title, 'text_frame'):
+                    title.text = "Variable Analysis"
+                if content and hasattr(content, 'text_frame'):
+                    numeric_cols = processed_data.select_dtypes(include=['number']).columns
+                    categorical_cols = processed_data.select_dtypes(include=['object']).columns
+                    
+                    var_info = f"""Variable Type Distribution:
+
+• Numeric Variables: {len(numeric_cols)} 
+  {', '.join(numeric_cols[:8].tolist())}{'...' if len(numeric_cols) > 8 else ''}
+
+• Categorical Variables: {len(categorical_cols)}
+  {', '.join(categorical_cols[:8].tolist())}{'...' if len(categorical_cols) > 8 else ''}
+
+• Total Unique Values Across Dataset: {processed_data.nunique().sum():,}
+• Average Unique Values per Variable: {processed_data.nunique().mean():.1f}"""
+                    content.text = var_info
+                
+                self._apply_template_styling(var_slide, template)
         
         # Analysis Results slides
         analysis_data = session_state.get('analysis_results', {})
@@ -119,23 +168,39 @@ class PresentationGenerator:
             
             self._apply_template_styling(summary_slide, template)
         
-        # Key Insights
+        # Key Insights - Split into multiple slides if needed
         if analysis_data.get('insights'):
-            insights_slide = prs.slides.add_slide(prs.slide_layouts[1])
-            title = insights_slide.shapes.title
-            content = insights_slide.placeholders[1]
-            
-            if title and hasattr(title, 'text_frame'):
-                title.text = "Key Insights"
-            if content and hasattr(content, 'text_frame'):
-                insights_list = analysis_data['insights']
-                if isinstance(insights_list, list):
-                    insights_text = "\n".join([f"• {insight}" for insight in insights_list])
-                else:
-                    insights_text = str(insights_list)
-                content.text = insights_text
-            
-            self._apply_template_styling(insights_slide, template)
+            insights_list = analysis_data['insights']
+            if isinstance(insights_list, list):
+                # Split insights into chunks of 4-5 per slide
+                insights_chunks = [insights_list[i:i+4] for i in range(0, len(insights_list), 4)]
+                
+                for i, chunk in enumerate(insights_chunks):
+                    insights_slide = prs.slides.add_slide(prs.slide_layouts[1])
+                    title = insights_slide.shapes.title
+                    content = insights_slide.placeholders[1]
+                    
+                    if title and hasattr(title, 'text_frame'):
+                        if len(insights_chunks) > 1:
+                            title.text = f"Key Insights - Part {i+1}"
+                        else:
+                            title.text = "Key Insights"
+                    if content and hasattr(content, 'text_frame'):
+                        insights_text = "\n\n".join([f"• {insight}" for insight in chunk])
+                        content.text = insights_text
+                    
+                    self._apply_template_styling(insights_slide, template)
+            else:
+                insights_slide = prs.slides.add_slide(prs.slide_layouts[1])
+                title = insights_slide.shapes.title
+                content = insights_slide.placeholders[1]
+                
+                if title and hasattr(title, 'text_frame'):
+                    title.text = "Key Insights"
+                if content and hasattr(content, 'text_frame'):
+                    content.text = str(insights_list)
+                
+                self._apply_template_styling(insights_slide, template)
         
         # Sentiment Analysis
         if analysis_data.get('sentiment_analysis'):
@@ -199,49 +264,151 @@ class PresentationGenerator:
             
             self._apply_template_styling(dashboard_slide, template)
         
-        # Latest Chat Conversation
+        # Latest Chat Conversation - Multiple slides for detailed conversation
         chat_history = session_state.get('chat_history', [])
         if chat_history:
-            # Get the last conversation (last user message and AI response)
-            last_messages = chat_history[-2:] if len(chat_history) >= 2 else chat_history
+            # Get the last 4 messages for more context
+            last_messages = chat_history[-4:] if len(chat_history) >= 4 else chat_history
             
             if last_messages:
-                chat_slide = prs.slides.add_slide(prs.slide_layouts[1])
-                title = chat_slide.shapes.title
-                content = chat_slide.placeholders[1]
+                # Create separate slides for user questions and AI responses
+                user_questions = [msg for msg in last_messages if msg.get('role') == 'user']
+                ai_responses = [msg for msg in last_messages if msg.get('role') == 'assistant']
+                
+                if user_questions:
+                    q_slide = prs.slides.add_slide(prs.slide_layouts[1])
+                    title = q_slide.shapes.title
+                    content = q_slide.placeholders[1]
+                    
+                    if title and hasattr(title, 'text_frame'):
+                        title.text = "Recent User Questions"
+                    if content and hasattr(content, 'text_frame'):
+                        questions_text = ""
+                        for i, msg in enumerate(user_questions[-2:], 1):
+                            questions_text += f"{i}. {msg.get('content', '')[:250]}...\n\n"
+                        content.text = questions_text
+                    
+                    self._apply_template_styling(q_slide, template)
+                
+                if ai_responses:
+                    ai_slide = prs.slides.add_slide(prs.slide_layouts[1])
+                    title = ai_slide.shapes.title
+                    content = ai_slide.placeholders[1]
+                    
+                    if title and hasattr(title, 'text_frame'):
+                        title.text = "AI Analysis & Insights"
+                    if content and hasattr(content, 'text_frame'):
+                        ai_text = "Latest AI Analysis:\n\n"
+                        latest_response = ai_responses[-1] if ai_responses else None
+                        if latest_response:
+                            ai_text += latest_response.get('content', '')[:500] + "..."
+                        content.text = ai_text
+                    
+                    self._apply_template_styling(ai_slide, template)
+        
+        # Recommendations - Split into multiple slides
+        if analysis_data.get('recommendations'):
+            recommendations = analysis_data['recommendations']
+            if isinstance(recommendations, list):
+                # Split recommendations into chunks of 3-4 per slide
+                rec_chunks = [recommendations[i:i+3] for i in range(0, len(recommendations), 3)]
+                
+                for i, chunk in enumerate(rec_chunks):
+                    rec_slide = prs.slides.add_slide(prs.slide_layouts[1])
+                    title = rec_slide.shapes.title
+                    content = rec_slide.placeholders[1]
+                    
+                    if title and hasattr(title, 'text_frame'):
+                        if len(rec_chunks) > 1:
+                            title.text = f"Recommendations - Part {i+1}"
+                        else:
+                            title.text = "Recommendations"
+                    if content and hasattr(content, 'text_frame'):
+                        rec_text = "\n\n".join([f"• {rec}" for rec in chunk])
+                        content.text = rec_text
+                    
+                    self._apply_template_styling(rec_slide, template)
+            else:
+                rec_slide = prs.slides.add_slide(prs.slide_layouts[1])
+                title = rec_slide.shapes.title
+                content = rec_slide.placeholders[1]
                 
                 if title and hasattr(title, 'text_frame'):
-                    title.text = "AI Chat Insights"
+                    title.text = "Recommendations"
                 if content and hasattr(content, 'text_frame'):
-                    chat_text = "Latest AI Conversation:\n\n"
-                    for msg in last_messages:
-                        role = msg.get('role', 'unknown')
-                        message = msg.get('content', '')
-                        if role == 'user':
-                            chat_text += f"Question: {message[:200]}...\n\n"
-                        elif role == 'assistant':
-                            chat_text += f"AI Insight: {message[:300]}..."
-                    content.text = chat_text
+                    content.text = str(recommendations)
                 
-                self._apply_template_styling(chat_slide, template)
+                self._apply_template_styling(rec_slide, template)
         
-        # Recommendations
-        if analysis_data.get('recommendations'):
-            rec_slide = prs.slides.add_slide(prs.slide_layouts[1])
-            title = rec_slide.shapes.title
-            content = rec_slide.placeholders[1]
-            
-            if title and hasattr(title, 'text_frame'):
-                title.text = "Recommendations"
-            if content and hasattr(content, 'text_frame'):
-                recommendations = analysis_data['recommendations']
-                if isinstance(recommendations, list):
-                    rec_text = "\n".join([f"• {rec}" for rec in recommendations])
-                else:
-                    rec_text = str(recommendations)
-                content.text = rec_text
-            
-            self._apply_template_styling(rec_slide, template)
+        # Methodology slide
+        method_slide = prs.slides.add_slide(prs.slide_layouts[1])
+        title = method_slide.shapes.title
+        content = method_slide.placeholders[1]
+        
+        if title and hasattr(title, 'text_frame'):
+            title.text = "Analysis Methodology"
+        if content and hasattr(content, 'text_frame'):
+            method_text = """AI-Powered Analysis Approach:
+
+• Business Problem Definition & Variable Extraction
+• Custom Questionnaire Generation using LLM
+• Automated Data Collection & Quality Assessment
+• Advanced Statistical Analysis & Pattern Recognition
+• Sentiment Analysis & Predictive Modeling
+• Interactive Dashboard Creation
+• AI-Driven Insight Generation"""
+            content.text = method_text
+        
+        self._apply_template_styling(method_slide, template)
+        
+        # Implementation Timeline slide
+        timeline_slide = prs.slides.add_slide(prs.slide_layouts[1])
+        title = timeline_slide.shapes.title
+        content = timeline_slide.placeholders[1]
+        
+        if title and hasattr(title, 'text_frame'):
+            title.text = "Implementation Timeline"
+        if content and hasattr(content, 'text_frame'):
+            timeline_text = """Recommended Implementation Schedule:
+
+Week 1-2: Immediate Actions
+• Implement high-priority recommendations
+• Set up monitoring systems
+
+Week 3-4: Process Improvements
+• Deploy identified solutions
+• Train relevant personnel
+
+Month 2-3: Optimization
+• Monitor results and adjust strategies
+• Collect additional data for refinement
+
+Ongoing: Continuous Improvement
+• Regular analysis updates
+• Performance tracking"""
+            content.text = timeline_text
+        
+        self._apply_template_styling(timeline_slide, template)
+        
+        # Next Steps slide
+        next_slide = prs.slides.add_slide(prs.slide_layouts[1])
+        title = next_slide.shapes.title
+        content = next_slide.placeholders[1]
+        
+        if title and hasattr(title, 'text_frame'):
+            title.text = "Next Steps & Actions"
+        if content and hasattr(content, 'text_frame'):
+            next_text = """Immediate Actions Required:
+
+• Review and approve recommended strategies
+• Assign ownership for each action item
+• Establish success metrics and KPIs
+• Schedule follow-up analysis sessions
+• Implement data collection improvements
+• Prepare stakeholder communication plan"""
+            content.text = next_text
+        
+        self._apply_template_styling(next_slide, template)
         
         # Conclusion slide
         conclusion_slide = prs.slides.add_slide(prs.slide_layouts[1])
@@ -251,13 +418,15 @@ class PresentationGenerator:
         if title and hasattr(title, 'text_frame'):
             title.text = "Conclusion"
         if content and hasattr(content, 'text_frame'):
-            conclusion_text = """Next Steps:
-• Implement recommended actions
-• Monitor key performance indicators
-• Continue data collection for ongoing analysis
-• Schedule regular review sessions
+            conclusion_text = """Key Takeaways:
 
-Generated by BI StoryTeller AI Platform"""
+• Data-driven insights provide clear direction
+• AI analysis reveals previously hidden patterns
+• Recommended actions are prioritized by impact
+• Continuous monitoring ensures sustained success
+
+Thank you for using BI StoryTeller AI Platform
+For questions or support: Continue using the Chat feature"""
             content.text = conclusion_text
         
         self._apply_template_styling(conclusion_slide, template)
