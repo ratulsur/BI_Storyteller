@@ -9,12 +9,32 @@ class SheetsClient:
     def __init__(self):
         try:
             # Try to get credentials from environment or Streamlit secrets
+            creds_raw = None
             if 'GOOGLE_CREDENTIALS' in os.environ:
-                creds_info = json.loads(os.getenv('GOOGLE_CREDENTIALS'))
+                creds_raw = os.getenv('GOOGLE_CREDENTIALS')
             elif hasattr(st, 'secrets') and 'google_credentials' in st.secrets:
-                creds_info = dict(st.secrets.google_credentials)
+                creds_raw = st.secrets.google_credentials
+            
+            if not creds_raw:
+                st.info("Google Sheets integration not configured. Using local data collection mode.")
+                self.client = None
+                return
+            
+            # Parse credentials - handle both string and dict formats
+            if isinstance(creds_raw, str):
+                if creds_raw.strip() == '':
+                    st.info("Google Sheets credentials are empty. Using local data collection mode.")
+                    self.client = None
+                    return
+                creds_info = json.loads(creds_raw)
             else:
-                st.warning("Google Sheets credentials not found. Data collection features will be limited.")
+                creds_info = dict(creds_raw)
+            
+            # Validate required fields
+            required_fields = ['type', 'project_id', 'private_key_id', 'private_key', 'client_email']
+            missing_fields = [field for field in required_fields if field not in creds_info]
+            if missing_fields:
+                st.warning(f"Google credentials missing required fields: {missing_fields}. Using local data collection mode.")
                 self.client = None
                 return
             
@@ -27,8 +47,11 @@ class SheetsClient:
             credentials = Credentials.from_service_account_info(creds_info, scopes=scope)
             self.client = gspread.authorize(credentials)
             
+        except json.JSONDecodeError as e:
+            st.warning(f"Invalid Google credentials format. Please check your JSON credentials. Using local data collection mode.")
+            self.client = None
         except Exception as e:
-            st.warning(f"Failed to initialize Google Sheets client: {str(e)}")
+            st.warning(f"Failed to initialize Google Sheets client: {str(e)}. Using local data collection mode.")
             self.client = None
 
     def create_questionnaire_sheet(self, questionnaire_data):
