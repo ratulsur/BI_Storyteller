@@ -5,11 +5,11 @@ import numpy as np
 
 st.set_page_config(
     page_title="Data Preprocessing - AI Data Analysis Platform",
-    page_icon="🧹",
+
     layout="wide"
 )
 
-st.title("🧹 Data Preprocessing")
+st.title("Data Preprocessing")
 st.markdown("Clean and prepare your data for comprehensive analysis.")
 
 # Check prerequisites
@@ -25,7 +25,7 @@ if 'data_processor' not in st.session_state:
     st.session_state.data_processor = DataProcessor()
 
 # Display raw data info
-st.header("📊 Raw Data Overview")
+st.header("Raw Data Overview")
 raw_data = st.session_state.raw_data
 
 col1, col2, col3, col4 = st.columns(4)
@@ -45,11 +45,11 @@ with col4:
     st.metric("Duplicate Rows", duplicate_count)
 
 # Data preview
-st.subheader("📋 Data Preview")
+st.subheader("Form Data Preview")
 st.dataframe(raw_data.head(10), use_container_width=True)
 
 # Data quality assessment
-st.header("🔍 Data Quality Assessment")
+st.header("Data Quality Assessment")
 
 col1, col2 = st.columns(2)
 
@@ -78,7 +78,7 @@ with col2:
     st.dataframe(dtype_df, use_container_width=True)
 
 # Preprocessing options
-st.header("⚙️ Preprocessing Options")
+st.header("Preprocessing Options")
 
 col1, col2 = st.columns(2)
 
@@ -151,12 +151,12 @@ with st.expander("🔧 Advanced Options"):
     )
 
 # Apply preprocessing
-st.header("🚀 Apply Preprocessing")
+st.header("Apply Preprocessing")
 
 col1, col2, col3 = st.columns([1, 1, 1])
 
 with col1:
-    if st.button("🧹 Clean Data", type="primary", use_container_width=True):
+    if st.button("Clean Data", type="primary", use_container_width=True):
         with st.spinner("Processing data..."):
             try:
                 # Prepare options
@@ -254,7 +254,7 @@ with col3:
 if st.session_state.get('processed_data') is not None:
     processed_data = st.session_state.processed_data
     
-    st.header("✅ Processed Data")
+    st.header("Approve Processed Data")
     
     # Comparison metrics
     col1, col2, col3, col4 = st.columns(4)
@@ -291,11 +291,11 @@ if st.session_state.get('processed_data') is not None:
         st.metric("Data Quality", f"{quality_score:.1f}%")
     
     # Processing log
-    st.subheader("📋 Processing Log")
+    st.subheader("Form Processing Log")
     processing_log = st.session_state.data_processor.get_processing_log()
     if processing_log:
         for log_entry in processing_log:
-            st.success(f"✅ {log_entry}")
+            st.success(f"Approve {log_entry}")
     else:
         st.info("No preprocessing steps applied yet.")
     
@@ -304,14 +304,14 @@ if st.session_state.get('processed_data') is not None:
     st.dataframe(processed_data.head(10), use_container_width=True)
     
     # Download processed data
-    st.subheader("📥 Download Processed Data")
+    st.subheader("Download Download Processed Data")
     
     col1, col2 = st.columns(2)
     
     with col1:
         csv_data = processed_data.to_csv(index=False)
         st.download_button(
-            label="📥 Download as CSV",
+            label="Download Download as CSV",
             data=csv_data,
             file_name="processed_data.csv",
             mime="text/csv",
@@ -321,7 +321,7 @@ if st.session_state.get('processed_data') is not None:
     with col2:
         json_data = processed_data.to_json(orient='records', indent=2)
         st.download_button(
-            label="📥 Download as JSON",
+            label="Download Download as JSON",
             data=json_data,
             file_name="processed_data.json",
             mime="application/json",
@@ -329,17 +329,17 @@ if st.session_state.get('processed_data') is not None:
         )
     
     # Next steps
-    st.header("🎯 Ready for Analysis")
+    st.header("Ready for Analysis")
     st.success("Your data is now clean and ready for comprehensive analysis!")
     
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("📊 Start Analysis", type="primary", use_container_width=True):
+        if st.button("Start Analysis", type="primary", use_container_width=True):
             st.switch_page("pages/5_Analysis.py")
     
     with col2:
-        if st.button("📈 View Dashboard", use_container_width=True):
+        if st.button("View Dashboard", use_container_width=True):
             st.switch_page("pages/6_Dashboard.py")
 
 # Navigation
@@ -347,10 +347,10 @@ st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    if st.button("⬅️ Back to Data Collection", use_container_width=True):
+    if st.button("Back to Data Collection", use_container_width=True):
         st.switch_page("pages/3_Data_Collection.py")
 
 with col2:
     has_processed_data = st.session_state.get('processed_data') is not None
-    if st.button("➡️ Next: Analysis", use_container_width=True, disabled=not has_processed_data):
+    if st.button("Next: Analysis", use_container_width=True, disabled=not has_processed_data):
         st.switch_page("pages/5_Analysis.py")

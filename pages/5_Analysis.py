@@ -8,11 +8,11 @@ from scipy import stats
 
 st.set_page_config(
     page_title="Analysis - AI Data Analysis Platform",
-    page_icon="📊",
+
     layout="wide"
 )
 
-st.title("📊 Comprehensive Data Analysis")
+st.title("Comprehensive Data Analysis")
 st.markdown("Explore your data through statistical analysis and interactive visualizations.")
 
 # Check prerequisites
@@ -33,7 +33,7 @@ if 'visualizer' not in st.session_state:
 visualizer = st.session_state.visualizer
 
 # Data overview
-st.header("📈 Data Overview")
+st.header("Data Overview")
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -55,7 +55,7 @@ with col4:
 tab1, tab2, tab3, tab4 = st.tabs(["📊 Descriptive Statistics", "📈 Visualizations", "🔍 Correlation Analysis", "📝 AI Insights"])
 
 with tab1:
-    st.header("📊 Descriptive Statistics")
+    st.header("Descriptive Statistics")
     
     # Numerical statistics
     numerical_cols = data_to_analyze.select_dtypes(include=[np.number]).columns
@@ -101,7 +101,7 @@ with tab1:
         st.subheader("Categorical Variables")
         
         for col in categorical_cols:
-            with st.expander(f"📋 {col}", expanded=False):
+            with st.expander(f"Form {col}", expanded=False):
                 col_data = data_to_analyze[col].dropna()
                 
                 if len(col_data) > 0:
@@ -133,7 +133,7 @@ with tab1:
                         st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
-    st.header("📈 Interactive Visualizations")
+    st.header("Interactive Visualizations")
     
     viz_type = st.selectbox(
         "Select Visualization Type",
@@ -252,7 +252,7 @@ with tab2:
             st.info("Need at least 2 numerical columns for correlation analysis.")
 
 with tab3:
-    st.header("🔍 Correlation Analysis")
+    st.header("Correlation Analysis")
     
     numerical_cols = data_to_analyze.select_dtypes(include=[np.number]).columns
     numerical_cols = [col for col in numerical_cols if col not in ['Response_ID']]
@@ -302,7 +302,7 @@ with tab3:
         st.info("Need at least 2 numerical variables for correlation analysis.")
 
 with tab4:
-    st.header("📝 AI-Generated Insights")
+    st.header("AI-Generated Insights")
     
     if st.button("🤖 Generate AI Insights", type="primary"):
         with st.spinner("Analyzing data and generating insights..."):
@@ -341,7 +341,7 @@ with tab4:
             default=text_columns[:2] if len(text_columns) >= 2 else text_columns
         )
         
-        if selected_text_cols and st.button("📊 Analyze Sentiment"):
+        if selected_text_cols and st.button("Analyze Sentiment"):
             with st.spinner("Performing sentiment analysis..."):
                 try:
                     fig_dist, fig_scatter = visualizer.create_sentiment_analysis(data_to_analyze, selected_text_cols)
@@ -361,12 +361,12 @@ with tab4:
                     st.error(f"Error in sentiment analysis: {str(e)}")
 
 # Export analysis results
-st.header("📥 Export Analysis")
+st.header("Download Export Analysis")
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    if st.button("📊 Export Summary Report", use_container_width=True):
+    if st.button("Export Summary Report", use_container_width=True):
         try:
             # Create summary report
             report = f"""
@@ -390,7 +390,7 @@ with col1:
             """
             
             st.download_button(
-                label="📥 Download Report",
+                label="Download Download Report",
                 data=report,
                 file_name="analysis_report.md",
                 mime="text/markdown"
@@ -400,13 +400,13 @@ with col1:
             st.error(f"Error creating report: {str(e)}")
 
 with col2:
-    if st.button("📈 Save Analysis State", use_container_width=True):
+    if st.button("Save Analysis State", use_container_width=True):
         # Save current analysis state
         st.session_state.analysis_complete = True
         st.success("Analysis state saved! You can now proceed to the dashboard.")
 
 with col3:
-    if st.button("📊 View Dashboard", use_container_width=True):
+    if st.button("View Dashboard", use_container_width=True):
         st.switch_page("pages/6_Dashboard.py")
 
 # Navigation
@@ -414,9 +414,9 @@ st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    if st.button("⬅️ Back to Preprocessing", use_container_width=True):
+    if st.button("Back to Preprocessing", use_container_width=True):
         st.switch_page("pages/4_Data_Preprocessing.py")
 
 with col2:
-    if st.button("➡️ Next: Dashboard", use_container_width=True):
+    if st.button("Next: Dashboard", use_container_width=True):
         st.switch_page("pages/6_Dashboard.py")

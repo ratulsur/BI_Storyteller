@@ -8,7 +8,6 @@ from utils.visualizer import Visualizer
 # Page configuration
 st.set_page_config(
     page_title="AI Data Analysis Platform",
-    page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -47,7 +46,7 @@ except Exception as e:
     st.stop()
 
 # Main page
-st.title("🚀 AI Data Analysis Platform")
+st.title("AI Data Analysis Platform")
 st.markdown("Transform your business problems into actionable insights through AI-generated questionnaires and automated data analysis.")
 
 # Sidebar navigation
@@ -65,10 +64,10 @@ workflow_steps = [
 ]
 
 for step in workflow_steps:
-    st.sidebar.markdown(f"📝 {step}")
+    st.sidebar.markdown(step)
 
 # Business problem input
-st.header("🎯 Business Problem")
+st.header("Business Problem")
 st.markdown("Describe your business challenge or problem that you want to analyze:")
 
 business_problem = st.text_area(

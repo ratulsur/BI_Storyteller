@@ -2,11 +2,10 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Variables - AI Data Analysis Platform",
-    page_icon="🔍",
     layout="wide"
 )
 
-st.title("🔍 Variable Extraction")
+st.title("Variable Extraction")
 st.markdown("AI will analyze your business problem and identify key variables for data collection.")
 
 # Check if business problem exists
@@ -17,16 +16,16 @@ if not st.session_state.get('business_problem'):
     st.stop()
 
 # Display business problem
-st.header("📋 Business Problem")
+st.header("Business Problem")
 st.info(st.session_state.business_problem)
 
 # Variable extraction section
-st.header("🎯 Variable Extraction")
+st.header("Variable Extraction")
 
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    if st.button("🔍 Extract Variables", type="primary", use_container_width=True):
+    if st.button("Extract Variables", type="primary", use_container_width=True):
         with st.spinner("Analyzing business problem and extracting variables..."):
             try:
                 variables = st.session_state.groq_client.extract_variables(st.session_state.business_problem)
@@ -46,7 +45,7 @@ with col2:
 
 # Display extracted variables
 if st.session_state.variables:
-    st.header("📊 Extracted Variables")
+    st.header("Extracted Variables")
     st.markdown("These are the key variables identified from your business problem:")
     
     # Create tabs for different variable types
@@ -59,7 +58,7 @@ if st.session_state.variables:
             with tabs[i]:
                 filtered_vars = [var for var in st.session_state.variables if var['type'] == vtype]
                 for var in filtered_vars:
-                    with st.expander(f"📌 {var['name']}", expanded=True):
+                    with st.expander(f"{var['name']}", expanded=True):
                         col1, col2 = st.columns([3, 1])
                         with col1:
                             st.write(f"**Description:** {var['description']}")
@@ -68,7 +67,7 @@ if st.session_state.variables:
     else:
         # Single type, display directly
         for var in st.session_state.variables:
-            with st.expander(f"📌 {var['name']}", expanded=True):
+            with st.expander(f"{var['name']}", expanded=True):
                 col1, col2 = st.columns([3, 1])
                 with col1:
                     st.write(f"**Description:** {var['description']}")
@@ -76,7 +75,7 @@ if st.session_state.variables:
                     st.markdown(f"**{var['type'].title()}**")
     
     # Edit variables section
-    st.header("✏️ Edit Variables")
+    st.header("Edit Variables")
     st.markdown("You can modify, add, or remove variables before proceeding to questionnaire generation.")
     
     # Create a form for editing variables
@@ -156,7 +155,7 @@ if st.session_state.variables:
                         st.error(f"Error re-extracting variables: {str(e)}")
         
         with col3:
-            if st.form_submit_button("➡️ Create Questionnaire", type="primary", use_container_width=True):
+            if st.form_submit_button("Next Create Questionnaire", type="primary", use_container_width=True):
                 if edited_variables:
                     st.session_state.variables = edited_variables
                     st.switch_page("pages/2_Questionnaire.py")
@@ -168,9 +167,9 @@ st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    if st.button("⬅️ Back to Main", use_container_width=True):
+    if st.button("Back to Main", use_container_width=True):
         st.switch_page("app.py")
 
 with col2:
-    if st.button("➡️ Next: Create Questionnaire", use_container_width=True, disabled=not st.session_state.variables):
+    if st.button("Next: Create Questionnaire", use_container_width=True, disabled=not st.session_state.variables):
         st.switch_page("pages/2_Questionnaire.py")

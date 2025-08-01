@@ -5,11 +5,11 @@ import io
 
 st.set_page_config(
     page_title="Data Collection - AI Data Analysis Platform",
-    page_icon="📊",
+
     layout="wide"
 )
 
-st.title("📊 Data Collection")
+st.title("Data Collection")
 st.markdown("Deploy your questionnaire and collect responses from your target audience.")
 
 # Check prerequisites
@@ -20,7 +20,7 @@ if not st.session_state.get('questionnaire'):
     st.stop()
 
 # Display questionnaire info
-st.header("📋 Questionnaire Information")
+st.header("Questionnaire Information")
 questionnaire = st.session_state.questionnaire
 col1, col2, col3 = st.columns(3)
 
@@ -35,7 +35,7 @@ with col3:
     st.metric("Required Questions", required_count)
 
 # Deployment section
-st.header("🚀 Deploy Questionnaire")
+st.header("Deploy Questionnaire")
 
 if not st.session_state.get('questionnaire_approved'):
     col1, col2 = st.columns([3, 1])
@@ -44,7 +44,7 @@ if not st.session_state.get('questionnaire_approved'):
         st.info("Click 'Approve & Deploy' to make your questionnaire available for data collection.")
     
     with col2:
-        if st.button("✅ Approve & Deploy", type="primary", use_container_width=True):
+        if st.button("Approve & Deploy", type="primary", use_container_width=True):
             st.session_state.questionnaire_approved = True
             
             # Create Google Sheet (if client is available)
@@ -66,12 +66,12 @@ if not st.session_state.get('questionnaire_approved'):
             st.rerun()
 
 if st.session_state.get('questionnaire_approved'):
-    st.success("✅ Questionnaire is approved and ready for data collection!")
+    st.success("Approve Questionnaire is approved and ready for data collection!")
     
     # Share questionnaire
-    st.header("🔗 Share Questionnaire")
+    st.header("Share Questionnaire")
     
-    tab1, tab2, tab3 = st.tabs(["📱 Interactive Form", "🔗 Shareable Link", "💻 HTML Code"])
+    tab1, tab2, tab3 = st.tabs(["Interactive Form", "Shareable Link", "HTML Code"])
     
     with tab1:
         st.markdown("### Fill out the questionnaire below:")
@@ -133,14 +133,14 @@ if st.session_state.get('questionnaire_approved'):
         # Download HTML file
         html_bytes = html_code.encode('utf-8')
         st.download_button(
-            label="📥 Download HTML File",
+            label="Download Download HTML File",
             data=html_bytes,
             file_name=f"{questionnaire.get('title', 'questionnaire').replace(' ', '_')}.html",
             mime="text/html"
         )
 
 # Data collection status
-st.header("📈 Data Collection Status")
+st.header("Data Collection Status")
 
 # Get responses
 responses_df = None
@@ -166,7 +166,7 @@ if responses_df is None or responses_df.empty:
         st.markdown("• Generate sample data for demonstration purposes")
     
     with col2:
-        if st.button("🎲 Generate Sample Data", help="Create sample responses for demonstration"):
+        if st.button("Generate Sample Data", help="Create sample responses for demonstration"):
             with st.spinner("Generating sample data..."):
                 sample_df = st.session_state.sheets_client.create_sample_data(questionnaire, 20)
                 if not sample_df.empty:
@@ -207,7 +207,7 @@ else:
             st.metric("Latest Response", "N/A")
     
     # Display recent responses
-    st.subheader("📋 Recent Responses")
+    st.subheader("Form Recent Responses")
     
     # Show last 5 responses
     display_df = responses_df.tail(5).copy()
@@ -222,14 +222,14 @@ else:
         st.dataframe(display_df, use_container_width=True)
     
     # Download responses
-    st.subheader("📥 Download Data")
+    st.subheader("Download Download Data")
     
     col1, col2 = st.columns(2)
     
     with col1:
         csv_data = responses_df.to_csv(index=False)
         st.download_button(
-            label="📥 Download as CSV",
+            label="Download Download as CSV",
             data=csv_data,
             file_name=f"{questionnaire.get('title', 'survey')}_responses.csv",
             mime="text/csv",
@@ -239,7 +239,7 @@ else:
     with col2:
         json_data = responses_df.to_json(orient='records', indent=2)
         st.download_button(
-            label="📥 Download as JSON",
+            label="Download Download as JSON",
             data=json_data,
             file_name=f"{questionnaire.get('title', 'survey')}_responses.json",
             mime="application/json",
@@ -250,17 +250,17 @@ else:
     st.session_state.raw_data = responses_df
     
     # Next steps
-    st.header("🎯 Next Steps")
+    st.header("Next Steps")
     col1, col2 = st.columns(2)
     
     with col1:
         st.info("**Ready for Data Preprocessing**\nClean and prepare your collected data for analysis.")
-        if st.button("🧹 Clean Data", type="primary", use_container_width=True):
+        if st.button("Clean Data", type="primary", use_container_width=True):
             st.switch_page("pages/4_Data_Preprocessing.py")
     
     with col2:
         st.info("**Quick Analysis**\nJump directly to analysis with the raw data.")
-        if st.button("📊 Analyze Data", use_container_width=True):
+        if st.button("Analyze Data", use_container_width=True):
             st.switch_page("pages/5_Analysis.py")
 
 # Navigation
@@ -268,11 +268,11 @@ st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    if st.button("⬅️ Back to Questionnaire", use_container_width=True):
+    if st.button("Back to Questionnaire", use_container_width=True):
         st.switch_page("pages/2_Questionnaire.py")
 
 with col2:
     raw_data = st.session_state.get('raw_data')
     has_data = raw_data is not None and not raw_data.empty
-    if st.button("➡️ Next: Data Preprocessing", use_container_width=True, disabled=not has_data):
+    if st.button("Next: Data Preprocessing", use_container_width=True, disabled=not has_data):
         st.switch_page("pages/4_Data_Preprocessing.py")

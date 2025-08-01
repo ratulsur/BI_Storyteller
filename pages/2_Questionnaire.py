@@ -4,11 +4,11 @@ import json
 
 st.set_page_config(
     page_title="Questionnaire - AI Data Analysis Platform",
-    page_icon="📋",
+
     layout="wide"
 )
 
-st.title("📋 Questionnaire Generation")
+st.title("Questionnaire Generation")
 st.markdown("Generate a comprehensive questionnaire based on your extracted variables.")
 
 # Check prerequisites
@@ -25,7 +25,7 @@ if not st.session_state.get('variables'):
     st.stop()
 
 # Display context
-st.header("📋 Context")
+st.header("Context")
 with st.expander("View Business Problem and Variables", expanded=False):
     st.markdown("**Business Problem:**")
     st.info(st.session_state.business_problem)
@@ -40,7 +40,7 @@ st.header("🤖 Generate Questionnaire")
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    if st.button("📋 Generate Questionnaire", type="primary", use_container_width=True):
+    if st.button("Form Generate Questionnaire", type="primary", use_container_width=True):
         with st.spinner("Generating questionnaire based on your business problem and variables..."):
             try:
                 questionnaire = st.session_state.groq_client.generate_questionnaire(
@@ -68,7 +68,7 @@ with col2:
 
 # Display generated questionnaire
 if st.session_state.questionnaire:
-    st.header("📝 Generated Questionnaire")
+    st.header("Generated Questionnaire")
     
     questionnaire = st.session_state.questionnaire
     
@@ -97,11 +97,11 @@ if st.session_state.questionnaire:
                     st.markdown(f"**{question['question_type'].title()}**")
                 
                 with col3:
-                    required_badge = "✅ Required" if question.get('required', False) else "⭕ Optional"
+                    required_badge = "Approve Required" if question.get('required', False) else "OptionalOptional"
                     st.markdown(required_badge)
     
     # Edit questionnaire section
-    st.header("✏️ Edit Questionnaire")
+    st.header("Edit Questionnaire")
     
     with st.form("edit_questionnaire"):
         # Edit title and description
@@ -233,7 +233,7 @@ if st.session_state.questionnaire:
                         st.error(f"Error regenerating questionnaire: {str(e)}")
         
         with col3:
-            if st.form_submit_button("✅ Approve & Deploy", type="primary", use_container_width=True):
+            if st.form_submit_button("Approve Approve & Deploy", type="primary", use_container_width=True):
                 if title and edited_questions:
                     updated_questionnaire = {
                         'title': title,
@@ -283,11 +283,11 @@ st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    if st.button("⬅️ Back to Variables", use_container_width=True):
+    if st.button("Back to Variables", use_container_width=True):
         st.switch_page("pages/1_Variables.py")
 
 with col2:
-    if st.button("➡️ Next: Data Collection", use_container_width=True, disabled=not st.session_state.questionnaire):
+    if st.button("Next: Data Collection", use_container_width=True, disabled=not st.session_state.questionnaire):
         if st.session_state.questionnaire:
             st.session_state.questionnaire_approved = True
         st.switch_page("pages/3_Data_Collection.py")

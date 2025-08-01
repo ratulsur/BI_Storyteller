@@ -6,11 +6,11 @@ from datetime import datetime
 
 st.set_page_config(
     page_title="Chat - AI Data Analysis Platform",
-    page_icon="💬",
+
     layout="wide"
 )
 
-st.title("💬 AI Chat Assistant")
+st.title("AI Chat Assistant")
 st.markdown("Ask questions about your data and get AI-powered insights in real-time.")
 
 # Check if we have data and context
@@ -82,7 +82,7 @@ st.session_state.data_context = create_data_context()
 
 # Sidebar with data summary
 with st.sidebar:
-    st.header("📊 Data Context")
+    st.header("Data Context")
     
     if data_to_analyze is not None and not data_to_analyze.empty:
         st.metric("Records", data_to_analyze.shape[0])
@@ -115,7 +115,7 @@ with st.sidebar:
     # Quick action buttons
     st.subheader("🚀 Quick Actions")
     
-    if st.button("🔍 Summarize Data", use_container_width=True):
+    if st.button("Summarize Data", use_container_width=True):
         if data_to_analyze is not None and not data_to_analyze.empty:
             summary_message = "Can you provide a comprehensive summary of my data including key patterns, distributions, and insights?"
             st.session_state.chat_history.append({
@@ -125,7 +125,7 @@ with st.sidebar:
             })
             st.rerun()
     
-    if st.button("📈 Identify Trends", use_container_width=True):
+    if st.button("Identify Trends", use_container_width=True):
         trend_message = "What trends and patterns can you identify in my data? Please highlight the most significant findings."
         st.session_state.chat_history.append({
             "role": "user", 
@@ -143,12 +143,12 @@ with st.sidebar:
         })
         st.rerun()
     
-    if st.button("🧹 Clear Chat", use_container_width=True):
+    if st.button("Clear Chat", use_container_width=True):
         st.session_state.chat_history = []
         st.rerun()
 
 # Main chat interface
-st.header("💬 Chat Interface")
+st.header("Chat Interface")
 
 # Display chat history
 chat_container = st.container()
@@ -216,7 +216,7 @@ if st.session_state.chat_history and st.session_state.chat_history[-1]["role"] =
             st.rerun()
 
 # Chat input
-st.header("✍️ Ask a Question")
+st.header("Ask a Question")
 
 # Example questions
 with st.expander("💡 Example Questions"):
@@ -256,7 +256,7 @@ with st.form("chat_form", clear_on_submit=True):
         submit_button = st.form_submit_button("📤 Send", use_container_width=True)
     
     with col2:
-        if st.form_submit_button("🎲 Random Question", use_container_width=True):
+        if st.form_submit_button("Generate Random Question", use_container_width=True):
             random_questions = [
                 "What are the most significant patterns in my data?",
                 "How does the data relate to my original business problem?",
@@ -283,7 +283,7 @@ with st.form("chat_form", clear_on_submit=True):
 
 # Chat statistics and export
 if st.session_state.chat_history:
-    st.header("📊 Chat Statistics")
+    st.header("Chat Statistics")
     
     col1, col2, col3, col4 = st.columns(4)
     
@@ -306,7 +306,7 @@ if st.session_state.chat_history:
             st.metric("Session Duration", f"{first_time} - {last_time}")
     
     # Export chat
-    st.subheader("📥 Export Chat")
+    st.subheader("Download Export Chat")
     
     col1, col2 = st.columns(2)
     
@@ -327,7 +327,7 @@ if st.session_state.chat_history:
             )
     
     with col2:
-        if st.button("📋 Copy Last Response", use_container_width=True):
+        if st.button("Form Copy Last Response", use_container_width=True):
             if ai_messages:
                 last_response = ai_messages[-1]["content"]
                 st.code(last_response)
@@ -335,7 +335,7 @@ if st.session_state.chat_history:
 
 # Navigation and quick links
 st.markdown("---")
-st.header("🔗 Quick Navigation")
+st.header("Quick Navigation")
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -344,15 +344,15 @@ with col1:
         st.switch_page("app.py")
 
 with col2:
-    if st.button("📊 Dashboard", use_container_width=True):
+    if st.button("Dashboard", use_container_width=True):
         st.switch_page("pages/6_Dashboard.py")
 
 with col3:
-    if st.button("🔍 Analysis", use_container_width=True):
+    if st.button("Analysis", use_container_width=True):
         st.switch_page("pages/5_Analysis.py")
 
 with col4:
-    if st.button("📈 Data Collection", use_container_width=True):
+    if st.button("Data Collection", use_container_width=True):
         st.switch_page("pages/3_Data_Collection.py")
 
 # Footer with tips

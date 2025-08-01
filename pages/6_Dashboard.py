@@ -10,11 +10,11 @@ from datetime import datetime, timedelta
 
 st.set_page_config(
     page_title="Dashboard - AI Data Analysis Platform",
-    page_icon="📈",
+
     layout="wide"
 )
 
-st.title("📈 Interactive Dashboard")
+st.title("Interactive Dashboard")
 st.markdown("Real-time insights, trends, and predictions from your data analysis.")
 
 # Check prerequisites
@@ -26,10 +26,10 @@ if data_to_analyze is None or data_to_analyze.empty:
     st.warning("No data available for dashboard. Please collect and analyze data first.")
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("📊 Go to Data Collection"):
+        if st.button("Go to Data Collection"):
             st.switch_page("pages/3_Data_Collection.py")
     with col2:
-        if st.button("🔍 Go to Analysis"):
+        if st.button("Go to Analysis"):
             st.switch_page("pages/5_Analysis.py")
     st.stop()
 
@@ -40,7 +40,7 @@ if 'visualizer' not in st.session_state:
 visualizer = st.session_state.visualizer
 
 # Dashboard overview metrics
-st.header("📊 Key Metrics Overview")
+st.header("Key Metrics Overview")
 
 col1, col2, col3, col4, col5 = st.columns(5)
 
@@ -101,7 +101,7 @@ with col5:
 tab1, tab2, tab3, tab4 = st.tabs(["📈 Trends", "💭 Sentiment", "🔮 Predictions", "🎯 Insights"])
 
 with tab1:
-    st.header("📈 Trend Analysis")
+    st.header("Trend Analysis")
     
     # Time-based trends
     if 'Timestamp' in data_to_analyze.columns:
@@ -201,7 +201,7 @@ with tab2:
         )
         
         if selected_text_cols:
-            if st.button("🔍 Analyze Sentiment", type="primary"):
+            if st.button("Analyze Sentiment", type="primary"):
                 with st.spinner("Analyzing sentiment..."):
                     try:
                         fig_dist, fig_scatter = visualizer.create_sentiment_analysis(data_to_analyze, selected_text_cols)
@@ -344,7 +344,7 @@ with tab3:
                 st.error(f"Error creating forecast: {str(e)}")
 
 with tab4:
-    st.header("🎯 Key Insights & Recommendations")
+    st.header("Key Insights & Recommendations")
     
     # AI-generated insights
     st.subheader("🤖 AI-Generated Insights")
@@ -373,7 +373,7 @@ with tab4:
     
     # Display previous insights
     if st.session_state.get('dashboard_insights'):
-        st.subheader("📋 Previous Insights")
+        st.subheader("Form Previous Insights")
         st.markdown(st.session_state.dashboard_insights)
     
     # Key statistics and patterns
@@ -421,7 +421,7 @@ with tab4:
             st.metric("Response Consistency", f"{consistency:.1f}%")
 
 # Action items and next steps
-st.header("🎯 Recommended Actions")
+st.header("Recommended Actions")
 
 col1, col2, col3 = st.columns(3)
 
@@ -429,7 +429,7 @@ with col1:
     st.markdown("**Data Collection:**")
     if len(data_to_analyze) < 100:
         st.warning("Consider collecting more responses for better insights")
-        if st.button("📊 Collect More Data"):
+        if st.button("Collect More Data"):
             st.switch_page("pages/3_Data_Collection.py")
     else:
         st.success("Good sample size for analysis")
@@ -438,7 +438,7 @@ with col2:
     st.markdown("**Analysis Depth:**")
     if not st.session_state.get('analysis_results'):
         st.info("Perform detailed analysis for deeper insights")
-        if st.button("🔍 Deep Analysis"):
+        if st.button("Deep Analysis"):
             st.switch_page("pages/5_Analysis.py")
     else:
         st.success("Analysis completed")
@@ -446,16 +446,16 @@ with col2:
 with col3:
     st.markdown("**Expert Consultation:**")
     st.info("Ask specific questions about your data")
-    if st.button("💬 Chat with AI"):
+    if st.button("Chat with AI"):
         st.switch_page("pages/7_Chat.py")
 
 # Export dashboard
-st.header("📥 Export Dashboard")
+st.header("Download Export Dashboard")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    if st.button("📊 Download Dashboard Summary", use_container_width=True):
+    if st.button("Download Dashboard Summary", use_container_width=True):
         try:
             dashboard_summary = f"""
 # Dashboard Summary Report
@@ -474,7 +474,7 @@ Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
             """
             
             st.download_button(
-                label="📥 Download Summary",
+                label="Download Download Summary",
                 data=dashboard_summary,
                 file_name=f"dashboard_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md",
                 mime="text/markdown"
@@ -492,9 +492,9 @@ st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    if st.button("⬅️ Back to Analysis", use_container_width=True):
+    if st.button("Back to Analysis", use_container_width=True):
         st.switch_page("pages/5_Analysis.py")
 
 with col2:
-    if st.button("💬 Open Chat", use_container_width=True):
+    if st.button("Open Chat", use_container_width=True):
         st.switch_page("pages/7_Chat.py")
