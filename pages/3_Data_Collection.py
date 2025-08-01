@@ -1,16 +1,17 @@
 import streamlit as st
-from utils.questionnaire_generator import render_questionnaire_form, generate_form_html
+from utils.database_client import DatabaseClient
+from utils.form_generator import FormGenerator
 import pandas as pd
 import io
+import json
 
 st.set_page_config(
     page_title="Data Collection - BI StoryTeller",
-
     layout="wide"
 )
 
 st.title("Data Collection")
-st.markdown("Deploy your questionnaire and collect responses from your target audience.")
+st.markdown("Create interactive forms and collect responses directly in the platform using PostgreSQL database.")
 
 # Check prerequisites
 if not st.session_state.get('questionnaire'):
@@ -19,260 +20,242 @@ if not st.session_state.get('questionnaire'):
         st.switch_page("pages/2_Questionnaire.py")
     st.stop()
 
-# Display questionnaire info
-st.header("Questionnaire Information")
+# Initialize form generator if not exists
+if 'form_generator' not in st.session_state:
+    st.session_state.form_generator = FormGenerator()
+
 questionnaire = st.session_state.questionnaire
-col1, col2, col3 = st.columns(3)
+form_generator = st.session_state.form_generator
 
-with col1:
-    st.metric("Title", questionnaire.get('title', 'N/A'))
+# Create tabs for different collection methods
+tab1, tab2, tab3 = st.tabs(["Interactive Form", "Response Management", "Data Export"])
 
-with col2:
-    st.metric("Questions", len(questionnaire.get('questions', [])))
-
-with col3:
-    required_count = sum(1 for q in questionnaire.get('questions', []) if q.get('required', False))
-    st.metric("Required Questions", required_count)
-
-# Deployment section
-st.header("Deploy Questionnaire")
-
-if not st.session_state.get('questionnaire_approved'):
-    col1, col2 = st.columns([3, 1])
+with tab1:
+    st.header("Interactive Data Collection Form")
     
-    with col1:
-        st.info("Click 'Approve & Deploy' to make your questionnaire available for data collection.")
+    # Display questionnaire info
+    with st.expander("Questionnaire Details", expanded=False):
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("Title", questionnaire.get('title', 'N/A'))
+        
+        with col2:
+            st.metric("Questions", len(questionnaire.get('questions', [])))
+        
+        with col3:
+            required_count = sum(1 for q in questionnaire.get('questions', []) if q.get('required', False))
+            st.metric("Required Questions", required_count)
     
-    with col2:
-        if st.button("Approve & Deploy", type="primary", use_container_width=True):
-            st.session_state.questionnaire_approved = True
-            
-            # Create Google Sheet (if client is available)
-            if hasattr(st.session_state, 'sheets_client') and st.session_state.sheets_client.client:
-                with st.spinner("Creating Google Sheet for data collection..."):
-                    try:
-                        sheet_url = st.session_state.sheets_client.create_questionnaire_sheet(questionnaire)
-                        if sheet_url:
-                            st.session_state.questionnaire_link = sheet_url
-                            st.success("Questionnaire deployed successfully!")
-                        else:
-                            st.warning("Failed to create Google Sheet. Using local data collection.")
-                    except Exception as e:
-                        st.error(f"Error creating Google Sheet: {str(e)}")
-            else:
-                st.session_state.questionnaire_link = "demo_link"
-                st.success("Questionnaire approved for data collection!")
-            
+    st.markdown("---")
+    
+    # Check if we're in submission mode
+    if st.session_state.get('show_success_message'):
+        st.success("Thank you! Your response has been recorded successfully.")
+        if st.button("Submit Another Response"):
+            st.session_state.show_success_message = False
             st.rerun()
-
-if st.session_state.get('questionnaire_approved'):
-    st.success("Approve Questionnaire is approved and ready for data collection!")
-    
-    # Share questionnaire
-    st.header("Share Questionnaire")
-    
-    tab1, tab2, tab3 = st.tabs(["Interactive Form", "Shareable Link", "HTML Code"])
-    
-    with tab1:
+    else:
+        # Render the interactive form
         st.markdown("### Fill out the questionnaire below:")
         
-        # Render the questionnaire form directly
-        responses = render_questionnaire_form(questionnaire)
+        table_name = form_generator.render_survey_form(questionnaire)
         
-        if responses:
-            st.success("Response submitted successfully!")
-            
-            # Save to session state (simulate database storage)
-            if 'collected_responses' not in st.session_state:
-                st.session_state.collected_responses = []
-            
-            # Convert responses to a format suitable for DataFrame
-            response_data = {}
-            response_data['Timestamp'] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
-            response_data['Response_ID'] = f"R{len(st.session_state.collected_responses) + 1}"
-            
-            for i, question in enumerate(questionnaire['questions']):
-                question_key = f"q_{i}"
-                column_name = f"Q{i+1}_{question['question_text'][:50]}"
-                response_data[column_name] = responses.get(question_key, "")
-            
-            st.session_state.collected_responses.append(response_data)
-            
-            # Also try to save to Google Sheets if available
-            if st.session_state.get('questionnaire_link') and st.session_state.get('questionnaire_link') != "demo_link":
-                try:
-                    success = st.session_state.sheets_client.save_response(
-                        st.session_state.questionnaire_link,
-                        list(responses.values())
-                    )
-                    if success:
-                        st.info("Response also saved to Google Sheets!")
-                except Exception as e:
-                    st.warning(f"Could not save to Google Sheets: {str(e)}")
-            
+        if table_name:
+            st.session_state.show_success_message = True
+            st.session_state.current_table_name = table_name
             st.rerun()
-    
-    with tab2:
-        if st.session_state.get('questionnaire_link'):
-            st.markdown("### Shareable Link")
-            if st.session_state.questionnaire_link != "demo_link":
-                st.code(st.session_state.questionnaire_link)
-                st.markdown("Share this link with your target audience to collect responses.")
-            else:
-                st.info("In a production environment, this would be a shareable Google Forms or external survey link.")
-        else:
-            st.info("Generate a shareable link by deploying the questionnaire.")
-    
-    with tab3:
-        st.markdown("### HTML Form Code")
-        st.markdown("Use this HTML code to embed the form in your website:")
-        
-        html_code = generate_form_html(questionnaire, "/submit-response")
-        st.code(html_code, language="html")
-        
-        # Download HTML file
-        html_bytes = html_code.encode('utf-8')
-        st.download_button(
-            label="Download Download HTML File",
-            data=html_bytes,
-            file_name=f"{questionnaire.get('title', 'questionnaire').replace(' ', '_')}.html",
-            mime="text/html"
-        )
 
-# Data collection status
-st.header("Data Collection Status")
-
-# Get responses
-responses_df = None
-if st.session_state.get('collected_responses'):
-    responses_df = pd.DataFrame(st.session_state.collected_responses)
-elif st.session_state.get('questionnaire_link') and st.session_state.get('questionnaire_link') != "demo_link":
-    # Try to get responses from Google Sheets
-    try:
-        responses_df = st.session_state.sheets_client.get_responses(st.session_state.questionnaire_link)
-    except Exception as e:
-        st.warning(f"Could not retrieve responses from Google Sheets: {str(e)}")
-
-# If no real responses, offer to generate sample data for demonstration
-if responses_df is None or responses_df.empty:
-    st.info("No responses collected yet.")
+with tab2:
+    st.header("Response Management")
     
-    col1, col2 = st.columns([2, 1])
+    # Get response count
+    response_count = form_generator.get_response_count(questionnaire)
+    
+    col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.markdown("**Options:**")
-        st.markdown("• Share the questionnaire link with your audience")
-        st.markdown("• Use the interactive form above to test data collection")
-        st.markdown("• Generate sample data for demonstration purposes")
+        st.metric("Total Responses", response_count)
     
     with col2:
-        if st.button("Generate Sample Data", help="Create sample responses for demonstration"):
-            with st.spinner("Generating sample data..."):
-                sample_df = st.session_state.sheets_client.create_sample_data(questionnaire, 20)
-                if not sample_df.empty:
-                    st.session_state.raw_data = sample_df
-                    st.success("Sample data generated!")
-                    st.rerun()
-
-else:
-    # Display collection metrics
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("Total Responses", len(responses_df))
-    
-    with col2:
-        if 'Timestamp' in responses_df.columns:
-            try:
-                responses_df['Timestamp'] = pd.to_datetime(responses_df['Timestamp'])
-                today_responses = responses_df[responses_df['Timestamp'].dt.date == pd.Timestamp.now().date()]
-                st.metric("Today's Responses", len(today_responses))
-            except:
-                st.metric("Today's Responses", "N/A")
+        if response_count > 0:
+            completion_rate = min(100, (response_count / 10) * 100)  # Assume target of 10 responses
+            st.metric("Progress", f"{completion_rate:.1f}%")
         else:
-            st.metric("Today's Responses", "N/A")
+            st.metric("Progress", "0%")
     
     with col3:
-        # Calculate completion rate (assuming all responses are complete for now)
-        st.metric("Completion Rate", "100%")
+        if st.button("Refresh Data"):
+            st.rerun()
     
-    with col4:
-        if 'Timestamp' in responses_df.columns:
-            try:
-                latest_response = responses_df['Timestamp'].max()
-                st.metric("Latest Response", latest_response.strftime("%H:%M"))
-            except:
-                st.metric("Latest Response", "N/A")
-        else:
-            st.metric("Latest Response", "N/A")
-    
-    # Display recent responses
-    st.subheader("Form Recent Responses")
-    
-    # Show last 5 responses
-    display_df = responses_df.tail(5).copy()
-    if not display_df.empty:
-        # Truncate long text for display
-        for col in display_df.columns:
-            if display_df[col].dtype == 'object':
-                display_df[col] = display_df[col].astype(str).apply(
-                    lambda x: x[:50] + "..." if len(x) > 50 else x
-                )
+    if response_count > 0:
+        # Get and display responses
+        responses_df = form_generator.get_form_responses(questionnaire)
         
-        st.dataframe(display_df, use_container_width=True)
-    
-    # Download responses
-    st.subheader("Download Download Data")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        csv_data = responses_df.to_csv(index=False)
-        st.download_button(
-            label="Download Download as CSV",
-            data=csv_data,
-            file_name=f"{questionnaire.get('title', 'survey')}_responses.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
-    
-    with col2:
-        json_data = responses_df.to_json(orient='records', indent=2)
-        st.download_button(
-            label="Download Download as JSON",
-            data=json_data,
-            file_name=f"{questionnaire.get('title', 'survey')}_responses.json",
-            mime="application/json",
-            use_container_width=True
-        )
-    
-    # Save to session state for next steps
-    st.session_state.raw_data = responses_df
-    
-    # Next steps
-    st.header("Next Steps")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.info("**Ready for Data Preprocessing**\nClean and prepare your collected data for analysis.")
-        if st.button("Clean Data", type="primary", use_container_width=True):
-            st.switch_page("pages/4_Data_Preprocessing.py")
-    
-    with col2:
-        st.info("**Quick Analysis**\nJump directly to analysis with the raw data.")
-        if st.button("Analyze Data", use_container_width=True):
-            st.switch_page("pages/5_Analysis.py")
+        if responses_df is not None and not responses_df.empty:
+            st.subheader("Recent Responses")
+            
+            # Display summary statistics
+            with st.expander("Response Summary", expanded=True):
+                st.markdown("**Latest Response:** " + str(responses_df['submitted_at'].max()))
+                st.markdown("**First Response:** " + str(responses_df['submitted_at'].min()))
+                
+                # Show response distribution over time
+                if len(responses_df) > 1:
+                    responses_df['date'] = pd.to_datetime(responses_df['submitted_at']).dt.date
+                    daily_responses = responses_df.groupby('date').size()
+                    
+                    if len(daily_responses) > 1:
+                        st.line_chart(daily_responses)
+            
+            # Display responses table
+            st.subheader("Response Data")
+            
+            # Remove internal columns for display
+            display_df = responses_df.drop(columns=['id'], errors='ignore')
+            
+            # Format datetime columns
+            if 'submitted_at' in display_df.columns:
+                display_df['submitted_at'] = pd.to_datetime(display_df['submitted_at']).dt.strftime('%Y-%m-%d %H:%M')
+            
+            st.dataframe(display_df, use_container_width=True)
+            
+            # Store data for analysis
+            st.session_state.raw_data = responses_df
+            st.success(f"✅ Data ready for analysis! {len(responses_df)} responses collected.")
+        else:
+            st.info("No responses found in database.")
+    else:
+        st.info("No responses collected yet. Share the form above to start collecting data.")
+        
+        # Option to add sample data for testing
+        if st.button("Generate Sample Data for Testing"):
+            with st.spinner("Generating sample responses..."):
+                sample_data = generate_sample_responses(questionnaire)
+                
+                # Create table and insert sample data
+                db_client = DatabaseClient()
+                table_name = db_client.create_survey_table(questionnaire)
+                
+                for sample in sample_data:
+                    db_client.submit_survey_response(table_name, sample)
+                
+                st.success(f"Generated {len(sample_data)} sample responses!")
+                st.rerun()
 
-# Navigation
-st.markdown("---")
-col1, col2 = st.columns(2)
+with tab3:
+    st.header("Data Export & Integration")
+    
+    if response_count > 0:
+        responses_df = form_generator.get_form_responses(questionnaire)
+        
+        if responses_df is not None and not responses_df.empty:
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("Download Options")
+                
+                # CSV download
+                csv_buffer = io.StringIO()
+                responses_df.to_csv(csv_buffer, index=False)
+                csv_data = csv_buffer.getvalue()
+                
+                st.download_button(
+                    label="Download as CSV",
+                    data=csv_data,
+                    file_name=f"{questionnaire.get('title', 'survey')}_responses.csv",
+                    mime="text/csv"
+                )
+                
+                # JSON download
+                json_data = responses_df.to_json(orient='records', date_format='iso')
+                
+                st.download_button(
+                    label="Download as JSON",
+                    data=json_data,
+                    file_name=f"{questionnaire.get('title', 'survey')}_responses.json",
+                    mime="application/json"
+                )
+            
+            with col2:
+                st.subheader("Data Preview")
+                st.markdown(f"**Total Records:** {len(responses_df)}")
+                st.markdown(f"**Columns:** {len(responses_df.columns)}")
+                
+                # Show column info
+                with st.expander("Column Information"):
+                    for col in responses_df.columns:
+                        col_type = str(responses_df[col].dtype)
+                        non_null_count = responses_df[col].count()
+                        st.markdown(f"• **{col}**: {col_type} ({non_null_count} non-null)")
+            
+            # Continue to Analysis button
+            if st.button("Continue to Data Analysis", type="primary"):
+                st.session_state.raw_data = responses_df
+                st.success("Data loaded for analysis!")
+                st.switch_page("pages/4_Data_Preprocessing.py")
+        
+    else:
+        st.info("No data available to export. Collect some responses first!")
 
-with col1:
-    if st.button("Back to Questionnaire", use_container_width=True):
-        st.switch_page("pages/2_Questionnaire.py")
+# Utility function for sample data generation
+def generate_sample_responses(questionnaire):
+    """Generate sample responses for testing"""
+    import random
+    from datetime import datetime, timedelta
+    
+    sample_responses = []
+    
+    for i in range(5):  # Generate 5 sample responses
+        response = {}
+        
+        for question in questionnaire.get('questions', []):
+            question_id = question['id']
+            question_type = question['type']
+            
+            if question_type == 'text':
+                response[question_id] = f"Sample text response {i+1}"
+            elif question_type == 'email':
+                response[question_id] = f"user{i+1}@example.com"
+            elif question_type == 'number':
+                min_val = question.get('min', 1)
+                max_val = question.get('max', 100)
+                response[question_id] = random.randint(min_val, max_val)
+            elif question_type == 'rating':
+                max_rating = question.get('max', 5)
+                response[question_id] = random.randint(1, max_rating)
+            elif question_type == 'select':
+                options = question.get('options', ['Option 1', 'Option 2'])
+                response[question_id] = random.choice(options)
+            elif question_type == 'multiselect':
+                options = question.get('options', ['Option 1', 'Option 2', 'Option 3'])
+                selected = random.sample(options, random.randint(1, min(2, len(options))))
+                response[question_id] = selected
+            elif question_type == 'boolean':
+                response[question_id] = random.choice([True, False])
+            elif question_type == 'date':
+                base_date = datetime.now() - timedelta(days=30)
+                random_days = random.randint(0, 30)
+                response[question_id] = (base_date + timedelta(days=random_days)).date().isoformat()
+            else:
+                response[question_id] = f"Sample response {i+1}"
+        
+        sample_responses.append(response)
+    
+    return sample_responses
 
-with col2:
-    raw_data = st.session_state.get('raw_data')
-    has_data = raw_data is not None and not raw_data.empty
-    if st.button("Next: Data Preprocessing", use_container_width=True, disabled=not has_data):
-        st.switch_page("pages/4_Data_Preprocessing.py")
+# Navigation help
+st.sidebar.markdown("""
+### Data Collection Guide
+
+1. **Interactive Form**: Fill out questionnaire directly in the platform
+2. **Response Management**: View and manage collected responses  
+3. **Data Export**: Download data for external analysis
+
+**Database Features:**
+- Real-time data storage
+- Automatic table creation
+- Response validation
+- Export capabilities
+""")

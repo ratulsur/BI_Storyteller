@@ -19,14 +19,18 @@ Preferred communication style: Simple, everyday language.
 ## Backend Architecture
 - **Core Processing**: Modular utility classes in utils/ directory for separated concerns
 - **AI Integration**: GroqClient for LLM-powered variable extraction, questionnaire generation, and chat assistance using Llama models
+- **Database Layer**: DatabaseClient handles PostgreSQL connections, table creation, and data operations
+- **Form Engine**: FormGenerator creates interactive Streamlit forms with database integration
 - **Data Pipeline**: DataProcessor handles cleaning, preprocessing, outlier removal, normalization, and encoding
 - **Visualization Engine**: Visualizer creates interactive plots using Plotly for distributions, correlations, and statistical charts
 
 ## Data Storage Solutions
-- **Primary Collection**: Google Sheets integration via gspread for questionnaire responses
+- **Primary Collection**: PostgreSQL database integration for questionnaire responses with automatic table creation
+- **Interactive Forms**: Streamlit-based forms with real-time validation and database storage
 - **Session Storage**: Streamlit session state for temporary data persistence during user sessions
 - **Data Formats**: Pandas DataFrames for in-memory data manipulation and analysis
-- **File Support**: CSV upload/download capabilities for data import/export
+- **Legacy Support**: Google Sheets integration via gspread (alternative collection method)
+- **File Support**: CSV/JSON upload/download capabilities for data import/export
 
 ## Authentication and Authorization
 - **Google Sheets Access**: Service account credentials via environment variables or Streamlit secrets

@@ -4,6 +4,8 @@ from utils.groq_client import GroqClient
 from utils.sheets_client import SheetsClient
 from utils.data_processor import DataProcessor
 from utils.visualizer import Visualizer
+from utils.database_client import DatabaseClient
+from utils.form_generator import FormGenerator
 
 # Page configuration
 st.set_page_config(
@@ -35,12 +37,16 @@ if 'analysis_results' not in st.session_state:
 def init_clients():
     groq_client = GroqClient(api_key=os.getenv("GROQ_API_KEY", ""))
     sheets_client = SheetsClient()
-    return groq_client, sheets_client
+    db_client = DatabaseClient()
+    form_generator = FormGenerator()
+    return groq_client, sheets_client, db_client, form_generator
 
 try:
-    groq_client, sheets_client = init_clients()
+    groq_client, sheets_client, db_client, form_generator = init_clients()
     st.session_state.groq_client = groq_client
     st.session_state.sheets_client = sheets_client
+    st.session_state.db_client = db_client
+    st.session_state.form_generator = form_generator
 except Exception as e:
     st.error(f"Failed to initialize clients: {str(e)}")
     st.stop()
