@@ -130,7 +130,7 @@ with tab1:
                     # Distribution plot
                     fig = visualizer.create_distribution_plot(data_to_analyze, col)
                     if fig:
-                        st.plotly_chart(fig, use_container_width=True)
+                        st.plotly_chart(fig, use_container_width=True, key=f"dist_plot_tab1_{col}")
 
 with tab2:
     st.header("Interactive Visualizations")
@@ -157,7 +157,7 @@ with tab2:
         if column:
             fig = visualizer.create_distribution_plot(data_to_analyze, column)
             if fig:
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, key=f"dist_plot_tab2_{column}")
             
             # Additional statistics
             if data_to_analyze[column].dtype in [np.number]:
@@ -189,7 +189,7 @@ with tab2:
             if x_col and y_col:
                 fig = visualizer.create_scatter_plot(data_to_analyze, x_col, y_col, color_col)
                 if fig:
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key=f"scatter_plot_{x_col}_{y_col}")
                 
                 # Correlation coefficient
                 if x_col in data_to_analyze.columns and y_col in data_to_analyze.columns:
@@ -199,7 +199,7 @@ with tab2:
             st.info("Need at least 2 numerical columns for scatter plot.")
     
     elif viz_type == "Box Plot":
-        st.subheader("📦 Box Plot Analysis")
+        st.subheader("Box Plot Analysis")
         
         numerical_cols = data_to_analyze.select_dtypes(include=[np.number]).columns.tolist()
         categorical_cols = data_to_analyze.select_dtypes(include=['object']).columns.tolist()
@@ -216,12 +216,12 @@ with tab2:
             if x_col and y_col:
                 fig = visualizer.create_box_plot(data_to_analyze, x_col, y_col)
                 if fig:
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key=f"box_plot_{x_col}_{y_col}")
         else:
             st.info("Need both numerical and categorical columns for box plot.")
     
     elif viz_type == "Time Series":
-        st.subheader("📅 Time Series Analysis")
+        st.subheader("Time Series Analysis")
         
         date_cols = [col for col in data_to_analyze.columns if 'date' in col.lower() or 'timestamp' in col.lower()]
         numerical_cols = data_to_analyze.select_dtypes(include=[np.number]).columns.tolist()
@@ -238,16 +238,16 @@ with tab2:
             if date_col and value_col:
                 fig = visualizer.create_time_series_plot(data_to_analyze, date_col, value_col)
                 if fig:
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key=f"timeseries_{date_col}_{value_col}")
         else:
             st.info("Need date and numerical columns for time series.")
     
     elif viz_type == "Correlation Heatmap":
-        st.subheader("🔥 Correlation Analysis")
+        st.subheader("Correlation Analysis")
         
         fig = visualizer.create_correlation_heatmap(data_to_analyze)
         if fig:
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key="correlation_heatmap_viz")
         else:
             st.info("Need at least 2 numerical columns for correlation analysis.")
 
@@ -264,7 +264,7 @@ with tab3:
         st.subheader("Correlation Matrix")
         fig = visualizer.create_correlation_heatmap(data_to_analyze)
         if fig:
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key="correlation_heatmap_tab3")
         
         # Strong correlations
         st.subheader("Notable Correlations")
@@ -289,7 +289,7 @@ with tab3:
             st.info("No strong correlations (|r| > 0.7) found between variables.")
         
         # Correlation insights
-        st.subheader("💡 Correlation Insights")
+        st.subheader("Correlation Insights")
         for i, col1 in enumerate(numerical_cols):
             for j, col2 in enumerate(numerical_cols[i+1:], i+1):
                 corr_val = corr_matrix.loc[col1, col2]

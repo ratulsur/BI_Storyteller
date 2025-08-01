@@ -70,8 +70,7 @@ class Visualizer:
             x=x_col,
             y=y_col,
             color=color_col if color_col and color_col in df.columns else None,
-            title=f"{y_col} vs {x_col}",
-            trendline="ols"
+            title=f"{y_col} vs {x_col}"
         )
         
         return fig
