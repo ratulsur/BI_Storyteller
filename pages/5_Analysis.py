@@ -112,7 +112,11 @@ with tab1:
                     
                     with stats_col1:
                         st.metric("Unique Values", col_data.nunique())
-                        st.metric("Most Common", value_counts.index[0] if len(value_counts) > 0 else "N/A")
+                        most_common = value_counts.index[0] if len(value_counts) > 0 else "N/A"
+                        # Convert date objects to string for display
+                        if hasattr(most_common, 'strftime'):
+                            most_common = most_common.strftime('%Y-%m-%d')
+                        st.metric("Most Common", str(most_common))
                     
                     with stats_col2:
                         st.metric("Mode Frequency", value_counts.iloc[0] if len(value_counts) > 0 else 0)
@@ -120,8 +124,16 @@ with tab1:
                     
                     # Value counts table
                     st.markdown("**Value Distribution:**")
+                    # Convert any date objects to strings for display
+                    display_values = []
+                    for val in value_counts.index:
+                        if hasattr(val, 'strftime'):
+                            display_values.append(val.strftime('%Y-%m-%d'))
+                        else:
+                            display_values.append(str(val))
+                    
                     value_counts_df = pd.DataFrame({
-                        'Value': value_counts.index,
+                        'Value': display_values,
                         'Count': value_counts.values,
                         'Percentage': (value_counts.values / len(col_data) * 100).round(2)
                     })
