@@ -74,17 +74,18 @@ class GroqClient:
         Key Variables to Address:
         {variables_text}
         
-        The questionnaire should have:
-        1. A title
-        2. A description
-        3. Questions array with each question having: question_text, question_type, options (if applicable), required (boolean)
+        IMPORTANT RULES:
+        1. Every "select" or "multiselect" question MUST include an "options" array with at least 3-5 options
+        2. Create a mix of question types to gather comprehensive data
+        3. Include 8-12 questions total for thorough data collection
+        4. Use clear, specific question text
         
         Question types: 'text', 'number', 'select', 'multiselect', 'date', 'boolean'
         
-        Example format:
+        Required format:
         {{
-            "title": "Customer Satisfaction Survey",
-            "description": "Help us understand factors affecting customer satisfaction",
+            "title": "Data Collection Survey",
+            "description": "Help us gather data to analyze your business problem",
             "questions": [
                 {{
                     "question_text": "How satisfied are you with our service?",
@@ -93,12 +94,20 @@ class GroqClient:
                     "required": true
                 }},
                 {{
+                    "question_text": "Which features do you use most?",
+                    "question_type": "multiselect",
+                    "options": ["Feature A", "Feature B", "Feature C", "Feature D"],
+                    "required": false
+                }},
+                {{
                     "question_text": "Additional comments",
                     "question_type": "text",
                     "required": false
                 }}
             ]
         }}
+        
+        CRITICAL: Every select/multiselect question MUST have valid options array!
         """
         
         try:
@@ -117,10 +126,72 @@ class GroqClient:
                 content = content[3:-3]
             
             questionnaire = json.loads(content)
+            
+            # Post-process to fix any missing options for select/multiselect questions
+            questionnaire = self._fix_questionnaire_options(questionnaire)
+            
             return questionnaire
         except Exception as e:
             st.error(f"Error generating questionnaire: {str(e)}")
             return {}
+    
+    def _fix_questionnaire_options(self, questionnaire):
+        """Fix questionnaire by adding default options to select/multiselect questions that are missing them"""
+        if not questionnaire or 'questions' not in questionnaire:
+            return questionnaire
+        
+        default_options_map = {
+            'satisfaction': ["Very Dissatisfied", "Dissatisfied", "Neutral", "Satisfied", "Very Satisfied"],
+            'frequency': ["Never", "Rarely", "Sometimes", "Often", "Always"],
+            'quality': ["Poor", "Below Average", "Average", "Good", "Excellent"],
+            'importance': ["Not Important", "Slightly Important", "Moderately Important", "Very Important", "Extremely Important"],
+            'agreement': ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"],
+            'rating': ["1 - Poor", "2 - Fair", "3 - Good", "4 - Very Good", "5 - Excellent"],
+            'experience': ["Very Negative", "Negative", "Neutral", "Positive", "Very Positive"],
+            'likelihood': ["Very Unlikely", "Unlikely", "Neutral", "Likely", "Very Likely"],
+            'size': ["Small", "Medium", "Large", "Very Large"],
+            'duration': ["Less than 1 month", "1-3 months", "3-6 months", "6-12 months", "More than 1 year"],
+            'category': ["Category A", "Category B", "Category C", "Category D", "Other"]
+        }
+        
+        for i, question in enumerate(questionnaire['questions']):
+            if question.get('question_type') in ['select', 'multiselect']:
+                if 'options' not in question or not question['options']:
+                    # Try to determine appropriate options based on question text
+                    question_text = question.get('question_text', '').lower()
+                    
+                    # Find the best matching default options
+                    best_options = None
+                    for keyword, options in default_options_map.items():
+                        if keyword in question_text:
+                            best_options = options
+                            break
+                    
+                    # If no match found, use generic options based on question type
+                    if not best_options:
+                        if 'satisfy' in question_text or 'satisfaction' in question_text:
+                            best_options = default_options_map['satisfaction']
+                        elif 'rate' in question_text or 'rating' in question_text:
+                            best_options = default_options_map['rating']
+                        elif 'agree' in question_text or 'opinion' in question_text:
+                            best_options = default_options_map['agreement']
+                        elif 'experience' in question_text:
+                            best_options = default_options_map['experience']
+                        elif 'quality' in question_text:
+                            best_options = default_options_map['quality']
+                        elif 'important' in question_text:
+                            best_options = default_options_map['importance']
+                        elif 'often' in question_text or 'frequency' in question_text:
+                            best_options = default_options_map['frequency']
+                        elif 'likely' in question_text:
+                            best_options = default_options_map['likelihood']
+                        else:
+                            # Generic fallback options
+                            best_options = ["Option 1", "Option 2", "Option 3", "Option 4", "Other"]
+                    
+                    question['options'] = best_options
+                    
+        return questionnaire
 
     def analyze_data(self, data_summary, analysis_type="general"):
         """Analyze data and provide insights"""
