@@ -93,7 +93,7 @@ with st.sidebar:
         for col in data_to_analyze.columns:
             col_type = str(data_to_analyze[col].dtype)
             if col_type == 'object':
-                st.text(f"📝 {col}")
+                st.text(f"Data: {col}")
             elif col_type in ['int64', 'float64']:
                 st.text(f"🔢 {col}")
             else:
@@ -104,7 +104,7 @@ with st.sidebar:
     
     # Business context
     if st.session_state.get('business_problem'):
-        st.subheader("🎯 Business Problem")
+        st.subheader("Business Problem")
         st.text_area(
             "Current Problem:",
             value=st.session_state.business_problem[:200] + "..." if len(st.session_state.business_problem) > 200 else st.session_state.business_problem,
@@ -113,7 +113,7 @@ with st.sidebar:
         )
     
     # Quick action buttons
-    st.subheader("🚀 Quick Actions")
+    st.subheader("Quick Actions")
     
     if st.button("Summarize Data", use_container_width=True):
         if data_to_analyze is not None and not data_to_analyze.empty:
@@ -160,9 +160,9 @@ with chat_container:
         👋 **Welcome to your AI Data Analysis Assistant!**
         
         I can help you with:
-        - 📊 Data summaries and insights
-        - 📈 Trend analysis and patterns
-        - 🔍 Statistical interpretations
+        - Data summaries and insights
+        - Trend analysis and patterns
+        - Statistical interpretations
         - 💡 Business recommendations
         - ❓ Answering specific questions about your data
         

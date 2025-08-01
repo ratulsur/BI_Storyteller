@@ -98,7 +98,7 @@ def create_shareable_form(questionnaire_data):
     """Create a shareable form page"""
     st.set_page_config(
         page_title=questionnaire_data.get('title', 'Survey'),
-        page_icon="📋",
+
         layout="wide"
     )
     

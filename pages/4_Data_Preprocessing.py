@@ -125,7 +125,7 @@ with col2:
     )
 
 # Advanced options
-with st.expander("🔧 Advanced Options"):
+with st.expander("Advanced Options"):
     st.subheader("Data Balancing")
     
     balance_data = st.checkbox(
@@ -226,7 +226,7 @@ with col2:
                 
                 preview_data = st.session_state.data_processor.clean_data(sample_data, options)
                 
-                st.subheader("📊 Preview of Changes")
+                st.subheader("Preview of Changes")
                 
                 col_a, col_b = st.columns(2)
                 
@@ -300,7 +300,7 @@ if st.session_state.get('processed_data') is not None:
         st.info("No preprocessing steps applied yet.")
     
     # Data preview
-    st.subheader("📊 Processed Data Preview")
+    st.subheader("Processed Data Preview")
     st.dataframe(processed_data.head(10), use_container_width=True)
     
     # Download processed data

@@ -98,7 +98,7 @@ with col5:
     )
 
 # Dashboard tabs
-tab1, tab2, tab3, tab4 = st.tabs(["📈 Trends", "💭 Sentiment", "🔮 Predictions", "🎯 Insights"])
+tab1, tab2, tab3, tab4 = st.tabs(["Trends", "Sentiment", "Predictions", "Insights"])
 
 with tab1:
     st.header("Trend Analysis")
@@ -113,7 +113,7 @@ with tab1:
             numerical_cols = [col for col in numerical_cols if col not in ['Response_ID']]
             
             if len(numerical_cols) > 0:
-                st.subheader("📊 Numerical Trends Over Time")
+                st.subheader("Numerical Trends Over Time")
                 
                 selected_metrics = st.multiselect(
                     "Select metrics to display",
@@ -127,7 +127,7 @@ with tab1:
                         st.plotly_chart(fig, use_container_width=True)
                     
                     # Trend summary
-                    st.subheader("📈 Trend Summary")
+                    st.subheader("Trend Summary")
                     for metric in selected_metrics:
                         try:
                             daily_data = data_to_analyze.groupby(data_to_analyze['Timestamp'].dt.date)[metric].mean()
@@ -143,7 +143,7 @@ with tab1:
                             continue
             
             # Response volume trends
-            st.subheader("📊 Response Volume Trends")
+            st.subheader("Response Volume Trends")
             daily_responses = data_to_analyze.groupby(data_to_analyze['Timestamp'].dt.date).size()
             
             fig = go.Figure()
@@ -171,7 +171,7 @@ with tab1:
         st.info("No timestamp data available for trend analysis.")
         
         # Alternative: Show distribution trends
-        st.subheader("📊 Distribution Analysis")
+        st.subheader("Distribution Analysis")
         
         numerical_cols = data_to_analyze.select_dtypes(include=[np.number]).columns
         numerical_cols = [col for col in numerical_cols if col not in ['Response_ID']]
@@ -185,14 +185,14 @@ with tab1:
                     st.plotly_chart(fig, use_container_width=True)
 
 with tab2:
-    st.header("💭 Sentiment Analysis")
+    st.header("Sentiment Analysis")
     
     # Find text columns for sentiment analysis
     text_columns = data_to_analyze.select_dtypes(include=['object']).columns
     text_columns = [col for col in text_columns if col not in ['Timestamp', 'Response_ID']]
     
     if text_columns:
-        st.subheader("📝 Text Response Sentiment")
+        st.subheader("Text Response Sentiment")
         
         selected_text_cols = st.multiselect(
             "Select text columns for sentiment analysis",
@@ -253,7 +253,7 @@ with tab2:
         st.info("No text columns available for sentiment analysis.")
         
         # Alternative: Show categorical sentiment proxy
-        st.subheader("📊 Response Pattern Analysis")
+        st.subheader("Response Pattern Analysis")
         categorical_cols = data_to_analyze.select_dtypes(include=['object']).columns
         categorical_cols = [col for col in categorical_cols if col not in ['Timestamp', 'Response_ID']]
         
@@ -264,11 +264,11 @@ with tab2:
                     st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
-    st.header("🔮 Predictions & Forecasting")
+    st.header("Predictions & Forecasting")
     
-    st.subheader("📈 Predictive Analysis")
+    st.subheader("Predictive Analysis")
     
-    if st.button("🔮 Generate Predictions", type="primary"):
+    if st.button("Generate Predictions", type="primary"):
         with st.spinner("Generating predictions and forecasts..."):
             try:
                 # Create data summary for predictions
@@ -289,7 +289,7 @@ with tab3:
     
     # Display previous predictions
     if st.session_state.get('predictions'):
-        st.subheader("📊 Previous Predictions")
+        st.subheader("Previous Predictions")
         st.markdown(st.session_state.predictions)
     
     # Trend-based predictions for numerical data
@@ -297,7 +297,7 @@ with tab3:
     numerical_cols = [col for col in numerical_cols if col not in ['Response_ID']]
     
     if len(numerical_cols) > 0 and 'Timestamp' in data_to_analyze.columns:
-        st.subheader("📈 Trend-Based Forecasting")
+        st.subheader("Trend-Based Forecasting")
         
         selected_metric = st.selectbox(
             "Select metric for forecasting",
@@ -377,7 +377,7 @@ with tab4:
         st.markdown(st.session_state.dashboard_insights)
     
     # Key statistics and patterns
-    st.subheader("📊 Statistical Highlights")
+    st.subheader("Statistical Highlights")
     
     col1, col2 = st.columns(2)
     

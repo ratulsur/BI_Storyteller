@@ -45,9 +45,53 @@ except Exception as e:
     st.error(f"Failed to initialize clients: {str(e)}")
     st.stop()
 
+# Custom CSS for professional styling
+st.markdown("""
+<style>
+    .main-header {
+        background: linear-gradient(90deg, #1f77b4, #2ca02c);
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    .stSelectbox > div > div {
+        background-color: #262730;
+        border: 1px solid #404040;
+    }
+    .stButton > button {
+        background: linear-gradient(90deg, #1f77b4, #2ca02c);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(31, 119, 180, 0.3);
+    }
+    .metric-card {
+        background-color: #262730;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #1f77b4;
+        margin: 0.5rem 0;
+    }
+    .professional-card {
+        background-color: #1a1a1a;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid #333;
+        margin: 1rem 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # Main page
-st.title("BI StoryTeller")
-st.markdown("Transform your business problems into actionable insights through AI-generated questionnaires and automated data analysis.")
+st.markdown('<div class="main-header"><h1 style="margin:0; color:white;">BI StoryTeller</h1><p style="margin:0.5rem 0 0 0; color:white;">Transform your business problems into actionable insights through AI-powered analysis</p></div>', unsafe_allow_html=True)
 
 # Sidebar navigation
 st.sidebar.title("Navigation")
@@ -89,47 +133,47 @@ if business_problem != st.session_state.business_problem:
     st.session_state.analysis_results = {}
 
 # Progress indicator
-st.header("📈 Workflow Progress")
+st.header("Workflow Progress")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     if st.session_state.business_problem:
-        st.success("✅ Problem Defined")
+        st.success("Problem Defined")
     else:
-        st.info("⏳ Define Problem")
+        st.info("Define Problem")
 
 with col2:
     if st.session_state.variables:
-        st.success("✅ Variables Extracted")
+        st.success("Variables Extracted")
     else:
-        st.info("⏳ Extract Variables")
+        st.info("Extract Variables")
 
 with col3:
     if st.session_state.questionnaire_approved:
-        st.success("✅ Questionnaire Approved")
+        st.success("Questionnaire Approved")
     else:
-        st.info("⏳ Create Questionnaire")
+        st.info("Create Questionnaire")
 
 with col4:
     if st.session_state.raw_data is not None:
-        st.success("✅ Data Collected")
+        st.success("Data Collected")
     else:
-        st.info("⏳ Collect Data")
+        st.info("Collect Data")
 
 # Quick actions
-st.header("🚀 Quick Actions")
+st.header("Quick Actions")
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    if st.button("🔍 Extract Variables", disabled=not st.session_state.business_problem):
+    if st.button("Extract Variables", disabled=not st.session_state.business_problem):
         st.switch_page("pages/1_Variables.py")
 
 with col2:
-    if st.button("📋 Create Questionnaire", disabled=not st.session_state.variables):
+    if st.button("Create Questionnaire", disabled=not st.session_state.variables):
         st.switch_page("pages/2_Questionnaire.py")
 
 with col3:
-    if st.button("💬 Start Chat", disabled=not st.session_state.business_problem):
+    if st.button("Start Chat", disabled=not st.session_state.business_problem):
         st.switch_page("pages/7_Chat.py")
 
 # Instructions

@@ -52,7 +52,7 @@ with col4:
     st.metric("Categorical Variables", len(categorical_cols))
 
 # Analysis tabs
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Descriptive Statistics", "📈 Visualizations", "🔍 Correlation Analysis", "📝 AI Insights"])
+tab1, tab2, tab3, tab4 = st.tabs(["Descriptive Statistics", "Visualizations", "Correlation Analysis", "AI Insights"])
 
 with tab1:
     st.header("Descriptive Statistics")
@@ -65,7 +65,7 @@ with tab1:
         st.subheader("Numerical Variables")
         
         for col in numerical_cols:
-            with st.expander(f"📈 {col}", expanded=False):
+            with st.expander(f"{col}", expanded=False):
                 col_data = data_to_analyze[col].dropna()
                 
                 if len(col_data) > 0:
@@ -147,7 +147,7 @@ with tab2:
     )
     
     if viz_type == "Distribution Plot":
-        st.subheader("📊 Distribution Analysis")
+        st.subheader("Distribution Analysis")
         
         column = st.selectbox(
             "Select column to analyze",
@@ -166,7 +166,7 @@ with tab2:
                 st.write(col_data.describe())
     
     elif viz_type == "Scatter Plot":
-        st.subheader("🔍 Scatter Plot Analysis")
+        st.subheader("Scatter Plot Analysis")
         
         numerical_cols = data_to_analyze.select_dtypes(include=[np.number]).columns.tolist()
         
@@ -261,13 +261,13 @@ with tab3:
         # Correlation matrix
         corr_matrix = data_to_analyze[numerical_cols].corr()
         
-        st.subheader("📊 Correlation Matrix")
+        st.subheader("Correlation Matrix")
         fig = visualizer.create_correlation_heatmap(data_to_analyze)
         if fig:
             st.plotly_chart(fig, use_container_width=True)
         
         # Strong correlations
-        st.subheader("🔍 Notable Correlations")
+        st.subheader("Notable Correlations")
         
         # Find strong correlations (> 0.7 or < -0.7)
         strong_corrs = []
@@ -325,7 +325,7 @@ with tab4:
     
     # Display previously generated insights
     if st.session_state.get('analysis_results', {}).get('ai_insights'):
-        st.subheader("🔍 Previous Insights")
+        st.subheader("Previous Insights")
         st.markdown(st.session_state.analysis_results['ai_insights'])
     
     # Sentiment analysis for text columns
@@ -333,7 +333,7 @@ with tab4:
     text_columns = [col for col in text_columns if col not in ['Timestamp', 'Response_ID']]
     
     if text_columns:
-        st.subheader("💭 Sentiment Analysis")
+        st.subheader("Sentiment Analysis")
         
         selected_text_cols = st.multiselect(
             "Select text columns for sentiment analysis",
