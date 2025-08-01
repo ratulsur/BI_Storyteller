@@ -265,7 +265,7 @@ if st.session_state.get('processed_data') is not None:
         st.metric(
             "Rows",
             processed_rows,
-            delta=processed_rows - original_rows
+            delta=int(processed_rows - original_rows)
         )
     
     with col2:
@@ -274,7 +274,7 @@ if st.session_state.get('processed_data') is not None:
         st.metric(
             "Columns",
             processed_cols,
-            delta=processed_cols - original_cols
+            delta=int(processed_cols - original_cols)
         )
     
     with col3:
@@ -282,8 +282,8 @@ if st.session_state.get('processed_data') is not None:
         processed_missing = processed_data.isnull().sum().sum()
         st.metric(
             "Missing Values",
-            processed_missing,
-            delta=processed_missing - original_missing
+            int(processed_missing),
+            delta=int(processed_missing - original_missing)
         )
     
     with col4:
