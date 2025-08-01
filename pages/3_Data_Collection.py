@@ -195,6 +195,10 @@ with tab2:
     # Get response count
     response_count = form_generator.get_response_count(questionnaire)
     
+    # Debug info for troubleshooting
+    st.write(f"Debug: Response count = {response_count}, Type = {type(response_count)}")
+    st.write(f"Debug: Questionnaire ID = {questionnaire.get('id', 'default')}")
+    
     col1, col2, col3 = st.columns(3)
     
     with col1:
@@ -251,23 +255,37 @@ with tab2:
     else:
         st.info("No responses collected yet. Share the form above to start collecting data.")
         
+        # Always show sample data generation option when no responses exist
+        st.markdown("### Generate Sample Data")
+        st.markdown("Create realistic sample responses to test the analysis features.")
+        
         # Option to add sample data for testing
         col1, col2 = st.columns(2)
         
         with col1:
             if st.button("Generate Sample Data for Testing", type="primary"):
                 with st.spinner("Generating realistic sample responses..."):
-                    sample_data = generate_sample_responses(questionnaire)
-                    
-                    # Create table and insert sample data
-                    db_client = DatabaseClient()
-                    table_name = db_client.create_survey_table(questionnaire)
-                    
-                    for sample in sample_data:
-                        db_client.submit_survey_response(table_name, sample)
-                    
-                    st.success(f"Generated {len(sample_data)} realistic sample responses!")
-                    st.rerun()
+                    try:
+                        sample_data = generate_sample_responses(questionnaire)
+                        
+                        # Create table and insert sample data
+                        db_client = DatabaseClient()
+                        table_name = db_client.create_survey_table(questionnaire)
+                        
+                        if table_name:
+                            success_count = 0
+                            for sample in sample_data:
+                                if db_client.submit_survey_response(table_name, sample):
+                                    success_count += 1
+                            
+                            st.success(f"Generated {success_count} realistic sample responses!")
+                            st.rerun()
+                        else:
+                            st.error("Failed to create database table")
+                    except Exception as e:
+                        st.error(f"Error generating sample data: {str(e)}")
+                        import traceback
+                        st.code(traceback.format_exc())
         
         with col2:
             if st.button("Clear All Data"):
