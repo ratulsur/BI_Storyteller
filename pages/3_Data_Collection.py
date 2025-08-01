@@ -38,15 +38,17 @@ with col2:
                         if db_client.submit_survey_response(table_name, sample):
                             success_count += 1
                     
-                    st.success(f"✅ Generated {success_count} sample responses! Check the Response Management tab.")
+                    st.success(f"Generated {success_count} sample responses! Check the Response Management tab.")
                     st.balloons()
+                    # Store data for immediate analysis access
+                    st.session_state.raw_data = db_client.get_survey_responses(table_name)
                     st.rerun()
                 else:
                     st.error("Failed to create database table")
             except Exception as e:
                 st.error(f"Error generating sample data: {str(e)}")
-
-st.markdown("---")
+                import traceback
+                st.code(traceback.format_exc())
 
 def generate_sample_responses(questionnaire):
     """Generate realistic sample responses for testing"""
@@ -168,6 +170,8 @@ def generate_sample_responses(questionnaire):
         sample_responses.append(response)
     
     return sample_responses
+
+st.markdown("---")
 
 # Check prerequisites
 if not st.session_state.get('questionnaire'):
