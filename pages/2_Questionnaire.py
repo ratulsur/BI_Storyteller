@@ -94,7 +94,7 @@ if st.session_state.questionnaire:
                             st.markdown(f"• {option}")
                 
                 with col2:
-                    st.badge(question['question_type'].title(), type="secondary")
+                    st.markdown(f"**{question['question_type'].title()}**")
                 
                 with col3:
                     required_badge = "✅ Required" if question.get('required', False) else "⭕ Optional"
