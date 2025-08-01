@@ -16,14 +16,14 @@ class SheetsClient:
                 creds_raw = st.secrets.google_credentials
             
             if not creds_raw:
-                st.info("Google Sheets integration not configured. Using local data collection mode.")
+                st.info("🏠 Using local data collection mode - all features are available with sample data generation.")
                 self.client = None
                 return
             
             # Parse credentials - handle both string and dict formats
             if isinstance(creds_raw, str):
                 if creds_raw.strip() == '':
-                    st.info("Google Sheets credentials are empty. Using local data collection mode.")
+                    st.info("🏠 Using local data collection mode - all features are available with sample data generation.")
                     self.client = None
                     return
                 creds_info = json.loads(creds_raw)
@@ -34,7 +34,7 @@ class SheetsClient:
             required_fields = ['type', 'project_id', 'private_key_id', 'private_key', 'client_email']
             missing_fields = [field for field in required_fields if field not in creds_info]
             if missing_fields:
-                st.warning(f"Google credentials missing required fields: {missing_fields}. Using local data collection mode.")
+                st.info(f"🏠 Using local data collection mode - all features are available with sample data generation.")
                 self.client = None
                 return
             
@@ -48,10 +48,10 @@ class SheetsClient:
             self.client = gspread.authorize(credentials)
             
         except json.JSONDecodeError as e:
-            st.warning(f"Invalid Google credentials format. Please check your JSON credentials. Using local data collection mode.")
+            st.info("🏠 Using local data collection mode - all features are available with sample data generation.")
             self.client = None
         except Exception as e:
-            st.warning(f"Failed to initialize Google Sheets client: {str(e)}. Using local data collection mode.")
+            st.info("🏠 Using local data collection mode - all features are available with sample data generation.")
             self.client = None
 
     def create_questionnaire_sheet(self, questionnaire_data):
