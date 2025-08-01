@@ -272,7 +272,7 @@ with col1:
         st.switch_page("pages/2_Questionnaire.py")
 
 with col2:
-    has_data = (st.session_state.get('raw_data') is not None and 
-                not st.session_state.raw_data.empty if st.session_state.get('raw_data') is not None else False)
+    raw_data = st.session_state.get('raw_data')
+    has_data = raw_data is not None and not raw_data.empty
     if st.button("➡️ Next: Data Preprocessing", use_container_width=True, disabled=not has_data):
         st.switch_page("pages/4_Data_Preprocessing.py")

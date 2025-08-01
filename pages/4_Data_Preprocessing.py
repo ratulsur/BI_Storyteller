@@ -13,7 +13,8 @@ st.title("🧹 Data Preprocessing")
 st.markdown("Clean and prepare your data for comprehensive analysis.")
 
 # Check prerequisites
-if not st.session_state.get('raw_data') or st.session_state.raw_data.empty:
+raw_data = st.session_state.get('raw_data')
+if raw_data is None or raw_data.empty:
     st.warning("No data available for preprocessing. Please collect data first.")
     if st.button("Go to Data Collection"):
         st.switch_page("pages/3_Data_Collection.py")
