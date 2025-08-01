@@ -26,20 +26,33 @@ if 'current_presentation' not in st.session_state:
 if 'generated_images' not in st.session_state:
     st.session_state.generated_images = []
 
-# Check prerequisites
+# Get available data
 analysis_data = st.session_state.get('analysis_results')
 processed_data = st.session_state.get('processed_data')
+business_problem = st.session_state.get('business_problem')
+chat_history = st.session_state.get('chat_history')
+dashboard_insights = st.session_state.get('dashboard_insights')
 
-if analysis_data is None and processed_data is None:
-    st.warning("Please complete data analysis first to generate presentations.")
+# Show data availability status
+data_sources_count = sum([
+    bool(business_problem),
+    bool(processed_data is not None),
+    bool(analysis_data),
+    bool(chat_history),
+    bool(dashboard_insights)
+])
+
+if data_sources_count == 0:
+    st.warning("No data available for presentation generation. Please complete the workflow steps first.")
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Go to Analysis Page"):
             st.switch_page("pages/5_Analysis.py")
     with col2:
-        if st.button("Create Blank Presentation"):
-            st.session_state.create_blank = True
-            st.rerun()
+        if st.button("Start with Variables"):
+            st.switch_page("pages/1_Variables.py")
+else:
+    st.success(f"Data from {data_sources_count} sources available for presentation generation!")
 
 # Presentation Creation Section
 st.header("Create Presentation")
@@ -47,37 +60,76 @@ st.header("Create Presentation")
 tab1, tab2, tab3 = st.tabs(["Quick Generate", "Custom Builder", "AI Image Studio"])
 
 with tab1:
-    st.subheader("Generate from Analysis")
+    st.subheader("Generate Comprehensive Presentation")
     
+    # Show available data sources
+    available_data = []
+    if st.session_state.get('business_problem'):
+        available_data.append("Business Problem Definition")
+    if processed_data is not None:
+        available_data.append(f"Dataset ({processed_data.shape[0]:,} records)")
     if analysis_data:
-        col1, col2 = st.columns([2, 1])
+        if analysis_data.get('summary'):
+            available_data.append("Executive Summary")
+        if analysis_data.get('insights'):
+            available_data.append(f"Key Insights ({len(analysis_data['insights'])} items)")
+        if analysis_data.get('sentiment_analysis'):
+            available_data.append("Sentiment Analysis")
+        if analysis_data.get('predictions') or analysis_data.get('forecast'):
+            available_data.append("Predictions & Forecasts")
+        if analysis_data.get('recommendations'):
+            available_data.append(f"Recommendations ({len(analysis_data['recommendations'])} items)")
+    if st.session_state.get('dashboard_insights'):
+        available_data.append("Dashboard Insights")
+    if st.session_state.get('chat_history'):
+        available_data.append("Latest AI Chat Conversation")
+    
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        st.markdown("**Available Data for Presentation:**")
+        if available_data:
+            for data_source in available_data:
+                st.markdown(f"✓ {data_source}")
+        else:
+            st.warning("No analysis data available. Complete the workflow to generate comprehensive presentations.")
+    
+    with col2:
+        template_choice = st.selectbox(
+            "Choose Template",
+            options=list(st.session_state.presentation_generator.templates.keys()),
+            key="quick_template"
+        )
         
-        with col1:
-            st.markdown("**Available Analysis Data:**")
-            if analysis_data.get('summary'):
-                st.markdown(f"• Executive Summary: {analysis_data['summary'][:100]}...")
-            if analysis_data.get('insights'):
-                st.markdown(f"• {len(analysis_data['insights'])} Key Insights")
-            if analysis_data.get('recommendations'):
-                st.markdown(f"• {len(analysis_data['recommendations'])} Recommendations")
-        
-        with col2:
-            template_choice = st.selectbox(
-                "Choose Template",
-                options=list(st.session_state.presentation_generator.templates.keys()),
-                key="quick_template"
-            )
+        if st.button("Generate Complete Presentation", type="primary", disabled=not available_data):
+            with st.spinner("Creating comprehensive presentation..."):
+                prs = st.session_state.presentation_generator.create_comprehensive_presentation(
+                    st.session_state, template_choice
+                )
+                st.session_state.current_presentation = prs
+                st.success(f"Comprehensive presentation created with {len(available_data)} data sections!")
+                st.balloons()
+                st.rerun()
+    
+    # Data preview section
+    if available_data:
+        with st.expander("Preview Available Data"):
+            if st.session_state.get('business_problem'):
+                st.markdown("**Business Problem:**")
+                st.write(st.session_state.business_problem[:200] + "...")
             
-            if st.button("Generate Presentation", type="primary"):
-                with st.spinner("Creating presentation..."):
-                    prs = st.session_state.presentation_generator.create_presentation_from_analysis(
-                        analysis_data, template_choice
-                    )
-                    st.session_state.current_presentation = prs
-                    st.success("Presentation created successfully!")
-                    st.rerun()
-    else:
-        st.info("Complete data analysis to enable quick generation.")
+            if analysis_data and analysis_data.get('summary'):
+                st.markdown("**Executive Summary:**")
+                st.write(analysis_data['summary'][:200] + "...")
+            
+            if st.session_state.get('chat_history'):
+                st.markdown("**Latest Chat:**")
+                recent_chat = st.session_state.chat_history[-1] if st.session_state.chat_history else None
+                if recent_chat:
+                    st.write(f"{recent_chat.get('role', 'Unknown')}: {recent_chat.get('content', '')[:150]}...")
+    
+    st.markdown("---")
+    st.info("💡 **Tip:** Complete more workflow steps (Analysis, Dashboard, Chat) to generate richer presentations with comprehensive insights.")
 
 with tab2:
     st.subheader("Custom Slide Builder")
@@ -311,23 +363,32 @@ with col2:
 st.sidebar.markdown("""
 ### Presentation Builder Guide
 
-**Quick Generate:**
-- Creates presentation from analysis results
-- Multiple professional templates
-- Automatic slide generation
+**Comprehensive Generation:**
+- Automatically includes ALL available data
+- Business problem, analysis, dashboard insights
+- Latest chat conversation (most recent only)
+- Sentiment analysis and predictions
+- Professional templates with consistent styling
 
-**Custom Builder:**
-- Manual slide creation
-- Template customization
-- Full control over content
+**Data Sources Included:**
+- Business problem definition
+- Dataset statistics and quality metrics
+- Analysis results and insights
+- Sentiment analysis findings
+- Predictions and forecasts
+- Dashboard insights
+- Latest AI chat conversation
+- Actionable recommendations
 
 **AI Image Studio:**
-- Chat-based image generation
+- Chat-based image generation using Groq AI
 - Professional business graphics
-- Direct integration with slides
+- Direct integration with presentation slides
+- Gallery management for image reuse
 
 **Tips:**
-- Generate analysis data first for best results
-- Use descriptive prompts for better images
-- Templates ensure consistent styling
+- Complete more workflow steps for richer presentations
+- Use descriptive prompts for better AI images
+- All templates maintain professional consistency
+- Only latest chat conversation is included (not full history)
 """)

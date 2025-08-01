@@ -47,8 +47,8 @@ class PresentationGenerator:
             }
         }
     
-    def create_presentation_from_analysis(self, analysis_data, template_name="Modern Business"):
-        """Create a presentation from analysis data"""
+    def create_comprehensive_presentation(self, session_state, template_name="Modern Business"):
+        """Create a comprehensive presentation from all available session data"""
         prs = Presentation()
         template = self.templates[template_name]
         
@@ -57,14 +57,56 @@ class PresentationGenerator:
         title = title_slide.shapes.title
         subtitle = title_slide.placeholders[1]
         
+        business_problem = session_state.get('business_problem', '')
+        title_text = "Business Intelligence Report"
+        if business_problem:
+            # Extract key topic from business problem
+            topic_keywords = business_problem.split()[:5]
+            title_text = f"Analysis: {' '.join(topic_keywords)}..."
+        
         if title and hasattr(title, 'text_frame'):
-            title.text = "Data Analysis Results"
+            title.text = title_text
         if subtitle and hasattr(subtitle, 'text_frame'):
-            subtitle.text = "AI-Powered Business Intelligence Report"
+            subtitle.text = "AI-Powered Data Analysis Results"
         
         self._apply_template_styling(title_slide, template)
         
-        # Executive Summary slide
+        # Business Problem slide
+        if business_problem:
+            problem_slide = prs.slides.add_slide(prs.slide_layouts[1])
+            title = problem_slide.shapes.title
+            content = problem_slide.placeholders[1]
+            
+            if title and hasattr(title, 'text_frame'):
+                title.text = "Business Problem"
+            if content and hasattr(content, 'text_frame'):
+                content.text = business_problem
+            
+            self._apply_template_styling(problem_slide, template)
+        
+        # Data Overview slide
+        processed_data = session_state.get('processed_data')
+        if processed_data is not None:
+            data_slide = prs.slides.add_slide(prs.slide_layouts[1])
+            title = data_slide.shapes.title
+            content = data_slide.placeholders[1]
+            
+            if title and hasattr(title, 'text_frame'):
+                title.text = "Data Overview"
+            if content and hasattr(content, 'text_frame'):
+                data_info = f"""Dataset Statistics:
+• Total Records: {processed_data.shape[0]:,}
+• Variables Analyzed: {processed_data.shape[1]}
+• Data Quality: {((1 - processed_data.isnull().sum().sum() / (processed_data.shape[0] * processed_data.shape[1])) * 100):.1f}%
+• Key Variables: {', '.join(processed_data.columns[:5].tolist())}"""
+                content.text = data_info
+            
+            self._apply_template_styling(data_slide, template)
+        
+        # Analysis Results slides
+        analysis_data = session_state.get('analysis_results', {})
+        
+        # Executive Summary
         if analysis_data.get('summary'):
             summary_slide = prs.slides.add_slide(prs.slide_layouts[1])
             title = summary_slide.shapes.title
@@ -77,7 +119,7 @@ class PresentationGenerator:
             
             self._apply_template_styling(summary_slide, template)
         
-        # Key Insights slide
+        # Key Insights
         if analysis_data.get('insights'):
             insights_slide = prs.slides.add_slide(prs.slide_layouts[1])
             title = insights_slide.shapes.title
@@ -86,12 +128,104 @@ class PresentationGenerator:
             if title and hasattr(title, 'text_frame'):
                 title.text = "Key Insights"
             if content and hasattr(content, 'text_frame'):
-                insights_text = "\n".join([f"• {insight}" for insight in analysis_data['insights']])
+                insights_list = analysis_data['insights']
+                if isinstance(insights_list, list):
+                    insights_text = "\n".join([f"• {insight}" for insight in insights_list])
+                else:
+                    insights_text = str(insights_list)
                 content.text = insights_text
             
             self._apply_template_styling(insights_slide, template)
         
-        # Recommendations slide
+        # Sentiment Analysis
+        if analysis_data.get('sentiment_analysis'):
+            sentiment_slide = prs.slides.add_slide(prs.slide_layouts[1])
+            title = sentiment_slide.shapes.title
+            content = sentiment_slide.placeholders[1]
+            
+            if title and hasattr(title, 'text_frame'):
+                title.text = "Sentiment Analysis"
+            if content and hasattr(content, 'text_frame'):
+                sentiment_data = analysis_data['sentiment_analysis']
+                if isinstance(sentiment_data, dict):
+                    sentiment_text = ""
+                    for key, value in sentiment_data.items():
+                        sentiment_text += f"• {key}: {value}\n"
+                else:
+                    sentiment_text = str(sentiment_data)
+                content.text = sentiment_text
+            
+            self._apply_template_styling(sentiment_slide, template)
+        
+        # Predictions
+        if analysis_data.get('predictions') or analysis_data.get('forecast'):
+            pred_slide = prs.slides.add_slide(prs.slide_layouts[1])
+            title = pred_slide.shapes.title
+            content = pred_slide.placeholders[1]
+            
+            if title and hasattr(title, 'text_frame'):
+                title.text = "Predictions & Forecasts"
+            if content and hasattr(content, 'text_frame'):
+                pred_data = analysis_data.get('predictions') or analysis_data.get('forecast')
+                if isinstance(pred_data, dict):
+                    pred_text = ""
+                    for key, value in pred_data.items():
+                        pred_text += f"• {key}: {value}\n"
+                elif isinstance(pred_data, list):
+                    pred_text = "\n".join([f"• {pred}" for pred in pred_data])
+                else:
+                    pred_text = str(pred_data)
+                content.text = pred_text
+            
+            self._apply_template_styling(pred_slide, template)
+        
+        # Dashboard Insights
+        dashboard_insights = session_state.get('dashboard_insights')
+        if dashboard_insights:
+            dashboard_slide = prs.slides.add_slide(prs.slide_layouts[1])
+            title = dashboard_slide.shapes.title
+            content = dashboard_slide.placeholders[1]
+            
+            if title and hasattr(title, 'text_frame'):
+                title.text = "Dashboard Insights"
+            if content and hasattr(content, 'text_frame'):
+                if isinstance(dashboard_insights, dict):
+                    dashboard_text = ""
+                    for key, value in dashboard_insights.items():
+                        dashboard_text += f"• {key}: {value}\n"
+                else:
+                    dashboard_text = str(dashboard_insights)
+                content.text = dashboard_text
+            
+            self._apply_template_styling(dashboard_slide, template)
+        
+        # Latest Chat Conversation
+        chat_history = session_state.get('chat_history', [])
+        if chat_history:
+            # Get the last conversation (last user message and AI response)
+            last_messages = chat_history[-2:] if len(chat_history) >= 2 else chat_history
+            
+            if last_messages:
+                chat_slide = prs.slides.add_slide(prs.slide_layouts[1])
+                title = chat_slide.shapes.title
+                content = chat_slide.placeholders[1]
+                
+                if title and hasattr(title, 'text_frame'):
+                    title.text = "AI Chat Insights"
+                if content and hasattr(content, 'text_frame'):
+                    chat_text = "Latest AI Conversation:\n\n"
+                    for msg in last_messages:
+                        role = msg.get('role', 'unknown')
+                        message = msg.get('content', '')
+                        if role == 'user':
+                            chat_text += f"Question: {message[:200]}...\n\n"
+                        elif role == 'assistant':
+                            chat_text += f"AI Insight: {message[:300]}..."
+                    content.text = chat_text
+                
+                self._apply_template_styling(chat_slide, template)
+        
+        # Recommendations
         if analysis_data.get('recommendations'):
             rec_slide = prs.slides.add_slide(prs.slide_layouts[1])
             title = rec_slide.shapes.title
@@ -100,12 +234,39 @@ class PresentationGenerator:
             if title and hasattr(title, 'text_frame'):
                 title.text = "Recommendations"
             if content and hasattr(content, 'text_frame'):
-                rec_text = "\n".join([f"• {rec}" for rec in analysis_data['recommendations']])
+                recommendations = analysis_data['recommendations']
+                if isinstance(recommendations, list):
+                    rec_text = "\n".join([f"• {rec}" for rec in recommendations])
+                else:
+                    rec_text = str(recommendations)
                 content.text = rec_text
             
             self._apply_template_styling(rec_slide, template)
         
+        # Conclusion slide
+        conclusion_slide = prs.slides.add_slide(prs.slide_layouts[1])
+        title = conclusion_slide.shapes.title
+        content = conclusion_slide.placeholders[1]
+        
+        if title and hasattr(title, 'text_frame'):
+            title.text = "Conclusion"
+        if content and hasattr(content, 'text_frame'):
+            conclusion_text = """Next Steps:
+• Implement recommended actions
+• Monitor key performance indicators
+• Continue data collection for ongoing analysis
+• Schedule regular review sessions
+
+Generated by BI StoryTeller AI Platform"""
+            content.text = conclusion_text
+        
+        self._apply_template_styling(conclusion_slide, template)
+        
         return prs
+    
+    def create_presentation_from_analysis(self, analysis_data, template_name="Modern Business"):
+        """Legacy method for backward compatibility"""
+        return self.create_comprehensive_presentation({'analysis_results': analysis_data}, template_name)
     
     def _apply_template_styling(self, slide, template):
         """Apply template styling to slide"""
