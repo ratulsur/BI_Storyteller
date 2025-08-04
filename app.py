@@ -6,6 +6,10 @@ from utils.data_processor import DataProcessor
 from utils.visualizer import Visualizer
 from utils.database_client import DatabaseClient
 from utils.form_generator import FormGenerator
+import sklearn
+
+
+groq_api_key = st.secrets["GROQ_API_KEY"]
 
 # Page configuration
 st.set_page_config(
