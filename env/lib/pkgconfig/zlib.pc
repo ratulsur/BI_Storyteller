@@ -1,0 +1,13 @@
+prefix=/Users/ratulsur/Desktop/all_data/BI_Storyteller/env
+exec_prefix=/Users/ratulsur/Desktop/all_data/BI_Storyteller/env
+libdir=/Users/ratulsur/Desktop/all_data/BI_Storyteller/env/lib
+sharedlibdir=/Users/ratulsur/Desktop/all_data/BI_Storyteller/env/lib
+includedir=/Users/ratulsur/Desktop/all_data/BI_Storyteller/env/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.2.13
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}
