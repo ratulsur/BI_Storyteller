@@ -1,0 +1,10 @@
+streamlit
+pandas
+python-pptx
+numpy
+plotly
+scipy
+plotly
+gspread
+textblob
+groq
