@@ -1,278 +1,325 @@
-import streamlit as st
-import pandas as pd
-from datetime import datetime
-import uuid
+"""
+Questionnaire Generator Module
+Creates comprehensive questionnaires based on extracted variables
+"""
 
-def render_questionnaire_form(questionnaire_data):
-    """Render the questionnaire form and collect responses"""
-    if not questionnaire_data or 'questions' not in questionnaire_data:
-        st.error("Invalid questionnaire data")
-        return None
-    
-    st.header(questionnaire_data.get('title', 'Survey'))
-    st.markdown(questionnaire_data.get('description', ''))
-    
-    responses = {}
-    
-    with st.form("questionnaire_form"):
-        for i, question in enumerate(questionnaire_data['questions']):
-            question_key = f"q_{i}"
-            question_text = question['question_text']
-            question_type = question['question_type']
-            required = question.get('required', False)
-            
-            # Add required indicator
-            if required:
-                question_text += " *"
-            
-            if question_type == 'text':
-                responses[question_key] = st.text_area(
-                    question_text,
-                    key=question_key,
-                    help="Please provide your answer in text format"
-                )
-                
-            elif question_type == 'number':
-                responses[question_key] = st.number_input(
-                    question_text,
-                    key=question_key,
-                    help="Please enter a numerical value"
-                )
-                
-            elif question_type == 'select':
-                options = question.get('options', [])
-                if options:
-                    responses[question_key] = st.selectbox(
-                        question_text,
-                        options=options,
-                        key=question_key,
-                        index=None if required else 0
-                    )
-                else:
-                    st.error(f"No options provided for question: {question_text}")
-                    
-            elif question_type == 'multiselect':
-                options = question.get('options', [])
-                if options:
-                    responses[question_key] = st.multiselect(
-                        question_text,
-                        options=options,
-                        key=question_key
-                    )
-                else:
-                    st.error(f"No options provided for question: {question_text}")
-                    
-            elif question_type == 'date':
-                responses[question_key] = st.date_input(
-                    question_text,
-                    key=question_key
-                )
-                
-            elif question_type == 'boolean':
-                responses[question_key] = st.checkbox(
-                    question_text,
-                    key=question_key
-                )
-                
-            else:
-                st.error(f"Unknown question type: {question_type}")
-        
-        submitted = st.form_submit_button("Submit Response")
-        
-        if submitted:
-            # Validate required fields
-            valid = True
-            for i, question in enumerate(questionnaire_data['questions']):
-                question_key = f"q_{i}"
-                if question.get('required', False):
-                    if not responses.get(question_key):
-                        st.error(f"Please answer the required question: {question['question_text']}")
-                        valid = False
-            
-            if valid:
-                return responses
-    
-    return None
+import random
+from typing import List, Dict, Any
 
-def create_shareable_form(questionnaire_data):
-    """Create a shareable form page"""
-    st.set_page_config(
-        page_title=questionnaire_data.get('title', 'Survey'),
 
-        layout="wide"
-    )
+class QuestionnaireGenerator:
+    """Generate questionnaires from business variables"""
     
-    # Custom CSS for better form styling
-    st.markdown("""
-    <style>
-    .stForm {
-        border: 1px solid #e6e6e6;
-        border-radius: 10px;
-        padding: 20px;
-        margin: 20px 0;
-    }
-    .required {
-        color: red;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    responses = render_questionnaire_form(questionnaire_data)
-    
-    if responses:
-        # Save response (in a real implementation, this would go to the database)
-        response_id = str(uuid.uuid4())
-        timestamp = datetime.now().isoformat()
+    def __init__(self):
+        self.question_templates = {
+            'demographic': [
+                "What is your age group?",
+                "What is your gender?",
+                "What is your income level?",
+                "What is your education level?",
+                "Where are you located?"
+            ],
+            'behavioral': [
+                "How frequently do you {action}?",
+                "When do you typically {action}?",
+                "What influences your decision to {action}?",
+                "How do you prefer to {action}?"
+            ],
+            'satisfaction': [
+                "How satisfied are you with {subject}?",
+                "How would you rate {subject}?",
+                "What do you like most about {subject}?",
+                "What improvements would you suggest for {subject}?"
+            ],
+            'preference': [
+                "Which {option} do you prefer?",
+                "What factors are most important when choosing {subject}?",
+                "How do you compare different {options}?",
+                "What would make you switch to a different {option}?"
+            ]
+        }
         
-        # For demonstration, show success message
-        st.success("Thank you for your response! Your submission has been recorded.")
-        
-        # In a real implementation, you would save to Google Sheets here
-        # st.session_state.sheets_client.save_response(sheet_url, list(responses.values()))
-        
-        return {
-            'response_id': response_id,
-            'timestamp': timestamp,
-            'responses': responses
+        self.mcq_options = {
+            'age': ["18-25", "26-35", "36-45", "46-55", "56-65", "65+"],
+            'gender': ["Male", "Female", "Non-binary", "Prefer not to say"],
+            'income': ["<$25k", "$25k-$50k", "$50k-$75k", "$75k-$100k", ">$100k"],
+            'education': ["High School", "Bachelor's", "Master's", "PhD", "Other"],
+            'frequency': ["Daily", "Weekly", "Monthly", "Rarely", "Never"],
+            'satisfaction': ["Very Satisfied", "Satisfied", "Neutral", "Dissatisfied", "Very Dissatisfied"],
+            'rating': ["Excellent", "Good", "Average", "Poor", "Very Poor"],
+            'importance': ["Very Important", "Important", "Neutral", "Not Important", "Not Important at All"]
         }
     
-    return None
-
-def generate_form_html(questionnaire_data, form_action_url):
-    """Generate HTML form for external hosting"""
-    if not questionnaire_data or 'questions' not in questionnaire_data:
-        return ""
+    def generate_questionnaire(self, variables: List[str]) -> List[Dict[str, Any]]:
+        """Generate a complete questionnaire from variables"""
+        questionnaire = []
+        
+        # Add demographic questions first
+        demographic_questions = self._generate_demographic_questions()
+        questionnaire.extend(demographic_questions)
+        
+        # Generate questions for each variable
+        for variable in variables:
+            var_questions = self._generate_variable_questions(variable)
+            questionnaire.extend(var_questions)
+        
+        # Add open-ended questions
+        open_ended = self._generate_open_ended_questions()
+        questionnaire.extend(open_ended)
+        
+        return questionnaire
     
-    html = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{questionnaire_data.get('title', 'Survey')}</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
-                background-color: #f5f5f5;
-            }}
-            .form-container {{
-                background: white;
-                padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }}
-            .question {{
-                margin-bottom: 20px;
-            }}
-            label {{
-                display: block;
-                font-weight: bold;
-                margin-bottom: 5px;
-            }}
-            input, select, textarea {{
-                width: 100%;
-                padding: 8px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                font-size: 14px;
-            }}
-            textarea {{
-                height: 100px;
-                resize: vertical;
-            }}
-            .required {{
-                color: red;
-            }}
-            .submit-btn {{
-                background-color: #007bff;
-                color: white;
-                padding: 12px 30px;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 16px;
-            }}
-            .submit-btn:hover {{
-                background-color: #0056b3;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="form-container">
-            <h1>{questionnaire_data.get('title', 'Survey')}</h1>
-            <p>{questionnaire_data.get('description', '')}</p>
+    def _generate_demographic_questions(self) -> List[Dict[str, Any]]:
+        """Generate standard demographic questions"""
+        questions = []
+        
+        demographics = [
+            ("What is your age group?", "age"),
+            ("What is your gender?", "gender"),
+            ("What is your annual income level?", "income"),
+            ("What is your highest education level?", "education")
+        ]
+        
+        for question_text, category in demographics:
+            question = {
+                "question": question_text,
+                "type": "MCQ",
+                "category": "demographic",
+                "options": self.mcq_options.get(category, ["Option 1", "Option 2", "Option 3", "Option 4"])
+            }
+            questions.append(question)
+        
+        return questions
+    
+    def _generate_variable_questions(self, variable: str) -> List[Dict[str, Any]]:
+        """Generate questions specific to a variable"""
+        questions = []
+        var_lower = variable.lower()
+        
+        # Determine question type based on variable
+        if any(word in var_lower for word in ['satisfaction', 'quality', 'rating']):
+            questions.extend(self._create_satisfaction_questions(variable))
+        elif any(word in var_lower for word in ['frequency', 'behavior', 'usage']):
+            questions.extend(self._create_behavioral_questions(variable))
+        elif any(word in var_lower for word in ['preference', 'choice', 'selection']):
+            questions.extend(self._create_preference_questions(variable))
+        else:
+            questions.extend(self._create_general_questions(variable))
+        
+        return questions
+    
+    def _create_satisfaction_questions(self, variable: str) -> List[Dict[str, Any]]:
+        """Create satisfaction-related questions"""
+        subject = variable.replace('Analysis', '').replace('Satisfaction', '').strip()
+        
+        questions = [
+            {
+                "question": f"How satisfied are you with {subject.lower()}?",
+                "type": "MCQ",
+                "category": "satisfaction",
+                "options": self.mcq_options["satisfaction"]
+            },
+            {
+                "question": f"How would you rate the overall {subject.lower()}?",
+                "type": "MCQ",
+                "category": "rating",
+                "options": self.mcq_options["rating"]
+            },
+            {
+                "question": f"What aspects of {subject.lower()} are most important to you?",
+                "type": "Descriptive",
+                "category": "preference"
+            }
+        ]
+        
+        return questions
+    
+    def _create_behavioral_questions(self, variable: str) -> List[Dict[str, Any]]:
+        """Create behavior-related questions"""
+        behavior = variable.replace('Analysis', '').replace('Behavior', '').strip()
+        
+        questions = [
+            {
+                "question": f"How often do you engage with {behavior.lower()}?",
+                "type": "MCQ",
+                "category": "frequency",
+                "options": self.mcq_options["frequency"]
+            },
+            {
+                "question": f"What motivates your {behavior.lower()} behavior?",
+                "type": "Descriptive",
+                "category": "motivation"
+            },
+            {
+                "question": f"When do you typically engage in {behavior.lower()}?",
+                "type": "MCQ",
+                "category": "timing",
+                "options": ["Morning", "Afternoon", "Evening", "Night", "Varies"]
+            }
+        ]
+        
+        return questions
+    
+    def _create_preference_questions(self, variable: str) -> List[Dict[str, Any]]:
+        """Create preference-related questions"""
+        subject = variable.replace('Analysis', '').replace('Preference', '').strip()
+        
+        questions = [
+            {
+                "question": f"What factors influence your {subject.lower()} preferences?",
+                "type": "Descriptive",
+                "category": "factors"
+            },
+            {
+                "question": f"How important is {subject.lower()} in your decision-making?",
+                "type": "MCQ",
+                "category": "importance",
+                "options": self.mcq_options["importance"]
+            }
+        ]
+        
+        return questions
+    
+    def _create_general_questions(self, variable: str) -> List[Dict[str, Any]]:
+        """Create general questions for any variable"""
+        subject = variable.replace('Analysis', '').strip()
+        
+        questions = [
+            {
+                "question": f"How familiar are you with {subject.lower()}?",
+                "type": "MCQ",
+                "category": "familiarity",
+                "options": ["Very Familiar", "Familiar", "Somewhat Familiar", "Not Familiar", "Never Heard Of"]
+            },
+            {
+                "question": f"What is your experience with {subject.lower()}?",
+                "type": "Descriptive",
+                "category": "experience"
+            }
+        ]
+        
+        return questions
+    
+    def _generate_open_ended_questions(self) -> List[Dict[str, Any]]:
+        """Generate open-ended questions for additional insights"""
+        questions = [
+            {
+                "question": "What additional comments or suggestions do you have?",
+                "type": "Descriptive",
+                "category": "feedback"
+            },
+            {
+                "question": "Is there anything else you'd like us to know?",
+                "type": "Descriptive",
+                "category": "additional"
+            }
+        ]
+        
+        return questions
+    
+    def modify_questionnaire(self, questionnaire: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Allow interactive modification of questionnaire"""
+        print("\n🔧 Questionnaire Modification Mode")
+        print("Commands: 'add', 'remove [number]', 'edit [number]', 'done'")
+        
+        while True:
+            command = input("\nEnter command: ").strip().lower()
             
-            <form action="{form_action_url}" method="POST">
-    """
-    
-    for i, question in enumerate(questionnaire_data['questions']):
-        question_text = question['question_text']
-        question_type = question['question_type']
-        required = question.get('required', False)
-        field_name = f"q_{i}"
+            if command == 'done':
+                break
+            elif command == 'add':
+                new_question = self._add_question()
+                if new_question:
+                    questionnaire.append(new_question)
+                    print("✅ Question added successfully!")
+            elif command.startswith('remove'):
+                try:
+                    parts = command.split()
+                    if len(parts) > 1:
+                        index = int(parts[1]) - 1
+                        if 0 <= index < len(questionnaire):
+                            removed = questionnaire.pop(index)
+                            print(f"✅ Removed: {removed['question']}")
+                        else:
+                            print("❌ Invalid question number")
+                    else:
+                        print("❌ Please specify question number to remove")
+                except (ValueError, IndexError):
+                    print("❌ Invalid remove command format")
+            elif command.startswith('edit'):
+                try:
+                    parts = command.split()
+                    if len(parts) > 1:
+                        index = int(parts[1]) - 1
+                        if 0 <= index < len(questionnaire):
+                            questionnaire[index] = self._edit_question(questionnaire[index])
+                            print("✅ Question edited successfully!")
+                        else:
+                            print("❌ Invalid question number")
+                    else:
+                        print("❌ Please specify question number to edit")
+                except (ValueError, IndexError):
+                    print("❌ Invalid edit command format")
+            else:
+                print("❌ Unknown command. Use 'add', 'remove [number]', 'edit [number]', or 'done'")
         
-        required_attr = "required" if required else ""
-        required_indicator = '<span class="required">*</span>' if required else ""
-        
-        html += f'<div class="question">'
-        html += f'<label for="{field_name}">{question_text} {required_indicator}</label>'
-        
-        if question_type == 'text':
-            html += f'<textarea name="{field_name}" id="{field_name}" {required_attr}></textarea>'
-        elif question_type == 'number':
-            html += f'<input type="number" name="{field_name}" id="{field_name}" {required_attr}>'
-        elif question_type == 'select':
-            options = question.get('options', [])
-            html += f'<select name="{field_name}" id="{field_name}" {required_attr}>'
-            if not required:
-                html += '<option value="">-- Please select --</option>'
-            for option in options:
-                html += f'<option value="{option}">{option}</option>'
-            html += '</select>'
-        elif question_type == 'date':
-            html += f'<input type="date" name="{field_name}" id="{field_name}" {required_attr}>'
-        elif question_type == 'boolean':
-            html += f'<input type="checkbox" name="{field_name}" id="{field_name}" value="true">'
-        
-        html += '</div>'
+        return questionnaire
     
-    html += """
-                <button type="submit" class="submit-btn">Submit Response</button>
-            </form>
-        </div>
-    </body>
-    </html>
-    """
-    
-    return html
-
-def validate_questionnaire(questionnaire_data):
-    """Validate questionnaire structure and content"""
-    if not questionnaire_data:
-        return False, "Questionnaire data is empty"
-    
-    if 'title' not in questionnaire_data:
-        return False, "Questionnaire must have a title"
-    
-    if 'questions' not in questionnaire_data or not questionnaire_data['questions']:
-        return False, "Questionnaire must have at least one question"
-    
-    for i, question in enumerate(questionnaire_data['questions']):
-        if 'question_text' not in question:
-            return False, f"Question {i+1} is missing question text"
+    def _add_question(self) -> Dict[str, Any]:
+        """Add a new question interactively"""
+        question_text = input("Enter question text: ").strip()
+        if not question_text:
+            print("❌ Question text cannot be empty")
+            return None
         
-        if 'question_type' not in question:
-            return False, f"Question {i+1} is missing question type"
+        question_type = input("Question type (MCQ/Descriptive): ").strip()
+        if question_type not in ['MCQ', 'Descriptive']:
+            print("❌ Invalid question type")
+            return None
         
-        valid_types = ['text', 'number', 'select', 'multiselect', 'date', 'boolean']
-        if question['question_type'] not in valid_types:
-            return False, f"Question {i+1} has invalid type: {question['question_type']}"
+        question = {
+            "question": question_text,
+            "type": question_type,
+            "category": "custom"
+        }
         
-        if question['question_type'] in ['select', 'multiselect']:
-            if 'options' not in question or not question['options']:
-                return False, f"Question {i+1} of type {question['question_type']} must have options"
+        if question_type == 'MCQ':
+            options = []
+            print("Enter options (press Enter twice to finish):")
+            while True:
+                option = input(f"Option {len(options) + 1}: ").strip()
+                if not option:
+                    break
+                options.append(option)
+            
+            if len(options) < 2:
+                print("❌ MCQ questions need at least 2 options")
+                return None
+            
+            question["options"] = options
+        
+        return question
     
-    return True, "Questionnaire is valid"
+    def _edit_question(self, question: Dict[str, Any]) -> Dict[str, Any]:
+        """Edit an existing question"""
+        print(f"\nEditing: {question['question']}")
+        
+        new_text = input(f"New question text (current: {question['question']}): ").strip()
+        if new_text:
+            question['question'] = new_text
+        
+        if question['type'] == 'MCQ' and 'options' in question:
+            edit_options = input("Edit options? (y/n): ").strip().lower()
+            if edit_options == 'y':
+                new_options = []
+                print("Enter new options (press Enter twice to finish):")
+                while True:
+                    option = input(f"Option {len(new_options) + 1}: ").strip()
+                    if not option:
+                        break
+                    new_options.append(option)
+                
+                if len(new_options) >= 2:
+                    question['options'] = new_options
+        
+        return question
