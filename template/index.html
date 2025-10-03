@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BI Storyteller</title>
+  <!-- Link to the dark theme styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Navigation -->
+  <header class="nav">
+    <div class="nav__brand">
+      <div class="logo">BI</div>
+      <div>
+        <h1>BI Storyteller</h1>
+        <p class="subtitle">AI‑powered marketing analytics</p>
+      </div>
+    </div>
+    <nav class="nav__links">
+      <a href="#home">Home</a>
+      <a href="#primary">Primary Flow</a>
+      <a href="#secondary">Secondary Flow</a>
+      <a href="#models">Models</a>
+      <a href="#presentation">Presentation</a>
+    </nav>
+  </header>
+
+  <!-- Home / Hero -->
+  <section id="home" class="hero container">
+    <div class="hero__content">
+      <h2>Transform Your Business Problem into Insights</h2>
+      <p>Start by describing your marketing challenge and choose how to collect data. Our system will guide you through variable extraction, questionnaire design, data analysis and presentation, all powered by advanced AI.</p>
+      <div class="home__form">
+        <label class="label" for="bp">Business Problem</label>
+        <textarea id="bp" rows="4" placeholder="Describe your business problem... (e.g., Increase conversion rate for new users)"></textarea>
+        <div class="radio-row" role="group" aria-label="Study type">
+          <span class="label">Type of Study</span>
+          <label class="radio"><input type="radio" name="study" value="primary" checked /> <span>Primary</span></label>
+          <label class="radio"><input type="radio" name="study" value="secondary" /> <span>Secondary</span></label>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn--primary" href="#primary">Proceed: Primary Flow</a>
+          <a class="btn btn--neutral" href="#secondary">Try: Secondary Flow</a>
+        </div>
+      </div>
+    </div>
+    <aside class="hero__aside">
+      <div class="card card--outline">
+        <h3>What BI Storyteller Does</h3>
+        <ul class="list">
+          <li>Extract important variables from your business problem</li>
+          <li>Auto‑generate and refine questionnaires</li>
+          <li>Collect or simulate data</li>
+          <li>Clean, visualise and analyse data (EDA, trends, A/B, ML)</li>
+          <li>Chat with your data using LLM and MoR models</li>
+          <li>Export your findings into polished PowerPoint decks</li>
+        </ul>
+      </div>
+    </aside>
+  </section>
+
+  <!-- Primary Workflow -->
+  <section id="primary" class="section container">
+    <div class="section__header">
+      <h2>Primary Study Flow</h2>
+      <p>Go from variables to insights to presentations with our end‑to‑end pipeline.</p>
+    </div>
+    <div class="grid grid--3">
+      <!-- Step 1: Variables -->
+      <div class="card">
+        <div class="step">1</div>
+        <h3>Variable Extraction</h3>
+        <p>Use our AI to pull the most relevant variables from your business problem. Edit or finalise before approval.</p>
+        <div class="badge-row">
+          <span class="badge">Finalise</span>
+          <span class="badge badge--muted">Edit</span>
+          <span class="badge badge--accent">Approve</span>
+        </div>
+        <a class="btn btn--ghost" href="#questionnaire">Next: Questionnaire</a>
+      </div>
+      <!-- Step 2: Questionnaire -->
+      <div id="questionnaire" class="card">
+        <div class="step">2</div>
+        <h3>Questionnaire</h3>
+        <p>Auto‑build MCQ and descriptive surveys from your variables. Make changes and approve before collecting data.</p>
+        <div class="badge-row">
+          <span class="badge">Finalise</span>
+          <span class="badge badge--muted">Edit</span>
+          <span class="badge badge--accent">Approve</span>
+        </div>
+        <div class="split-row">
+          <a class="btn btn--primary btn--sm" href="#collection">Generate Sample Data</a>
+          <a class="btn btn--neutral btn--sm" href="#collection">Add Questionnaire Link</a>
+        </div>
+      </div>
+      <!-- Step 3: Data Collection -->
+      <div id="collection" class="card">
+        <div class="step">3</div>
+        <h3>Data Collection</h3>
+        <p>Use the generated form or link to gather real responses. Or generate a synthetic dataset for proof‑of‑concept analysis.</p>
+        <a class="btn btn--ghost" href="#analysis">Proceed to Analysis</a>
+      </div>
+    </div>
+    <!-- Analysis sub‑suite -->
+    <div id="analysis" class="stack">
+      <h3>Analysis Suite</h3>
+      <div class="grid grid--4">
+        <div class="tool"><h4>Clean Data</h4><p>Handle missing values, outliers and encoding.</p></div>
+        <div class="tool"><h4>Visualise Data</h4><p>Explore distributions, relationships and correlations.</p></div>
+        <div class="tool"><h4>Trend Analysis</h4><p>Understand how key metrics evolve over time.</p></div>
+        <div class="tool"><h4>A/B Testing</h4><p>Test hypotheses across variants with statistical rigour.</p></div>
+        <div class="tool"><h4>Predictions & ML</h4><p>Build and evaluate predictive models.</p></div>
+        <div class="tool"><h4>Sentiment</h4><p>Analyse text feedback for emotion and tone.</p></div>
+        <div class="tool"><h4>Chat with Data</h4><p>Ask questions and get AI‑powered answers.</p></div>
+      </div>
+      <div class="cta-row">
+        <a class="btn btn--accent" href="#presentation">Export Selected to Presentation</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Secondary Workflow -->
+  <section id="secondary" class="section section--alt container">
+    <div class="section__header">
+      <h2>Secondary Study Flow</h2>
+      <p>Scrape web data for competitor or product analysis.</p>
+    </div>
+    <div class="grid grid--3">
+      <div class="card">
+        <div class="step">1</div>
+        <h3>Flipkart Scraping</h3>
+        <p>Enter search queries and we’ll fetch products and reviews from Flipkart.</p>
+        <a class="btn btn--ghost" href="#sec-analysis">Proceed</a>
+      </div>
+      <div class="card">
+        <div class="step">2</div>
+        <h3>Clean & Ingest</h3>
+        <p>Normalise and validate scraped data, then load into your dataset for analysis.</p>
+      </div>
+      <div class="card">
+        <div class="step">3</div>
+        <h3>Quality Checks</h3>
+        <p>Profile rows, columns, missingness and overall quality before analysis.</p>
+      </div>
+    </div>
+    <div id="sec-analysis" class="stack">
+      <h3>Text Analytics</h3>
+      <div class="grid grid--3">
+        <div class="tool"><h4>Topic Modelling</h4><p>Uncover themes from reviews at scale.</p></div>
+        <div class="tool"><h4>Co‑occurrence</h4><p>See which terms appear together frequently.</p></div>
+        <div class="tool"><h4>Word Correlation</h4><p>Find word relationships and strengths.</p></div>
+        <div class="tool"><h4>Chat with Data</h4><p>Ask questions about products or sentiments.</p></div>
+        <div class="tool"><h4>Bubble Line Diagram</h4><p>Visualise word frequencies over time.</p></div>
+      </div>
+      <div class="cta-row">
+        <a class="btn btn--accent" href="#presentation">Export Selected to Presentation</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Model Comparison -->
+  <section id="models" class="section container">
+    <div class="section__header">
+      <h2>Models: LLM vs MoR</h2>
+      <p>Compare responses from our large language model and our Mixture‑of‑Recursions planner.</p>
+    </div>
+    <div class="grid grid--2 chat-panels">
+      <div class="panel">
+        <h3>Chat Model (LLM)</h3>
+        <div class="chat">
+          <div class="chat__msg chat__msg--user">What are the top 3 factors affecting our sales?</div>
+          <div class="chat__msg chat__msg--bot">According to the current data, the top factors are pricing, customer satisfaction and marketing spend...</div>
+        </div>
+        <a class="btn btn--neutral btn--sm" href="#">Open Chat</a>
+      </div>
+      <div class="panel">
+        <h3>Chat Model (MoR)</h3>
+        <div class="chat">
+          <div class="chat__msg chat__msg--user">What are the top 3 factors affecting our sales?</div>
+          <div class="chat__trace">
+            <span class="chip">Plan → 3 subtasks</span>
+            <span class="chip">Execute → EDA / Trends / Sentiment</span>
+            <span class="chip chip--accent">Aggregate → Final answer</span>
+          </div>
+          <div class="chat__msg chat__msg--bot">After decomposing and running subtasks, the main factors are pricing elasticity, seasonal demand and competitor activity...</div>
+        </div>
+        <a class="btn btn--neutral btn--sm" href="#">Open Chat</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Presentation -->
+  <section id="presentation" class="section section--alt container">
+    <div class="section__header">
+      <h2>Presentation Generation</h2>
+      <p>Compile your analysis and chat outputs into a polished slide deck.</p>
+    </div>
+    <div class="grid grid--2">
+      <div class="card">
+        <h3>Selected Sections</h3>
+        <ul class="list">
+          <li>Business Problem & Variables</li>
+          <li>Questionnaire Summary</li>
+          <li>EDA & Visuals</li>
+          <li>A/B Tests & Metrics</li>
+          <li>Predictions & Explanations</li>
+          <li>Sentiment Highlights</li>
+          <li>LLM/MoR Chat Takeaways</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Export</h3>
+        <p>Choose your favourite template and build your deck.</p>
+        <div class="split-row">
+          <button class="btn btn--primary btn--block" disabled>Build PPT (Coming Soon)</button>
+          <button class="btn btn--ghost btn--block">Preview Theme</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer container">
+    <p>© 2025 BI Storyteller. Built with AI for data‑driven marketers.</p>
+  </footer>
+
+</body>
+</html>
