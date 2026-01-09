@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="page-header">
+    <h1>Questionnaire Generator</h1>
+    <p>Enter one variable per line and generate a structured questionnaire.</p>
+  </section>
+
+  <section class="card">
+    <form method="post" class="form-grid">
+      <label for="variables">Variables</label>
+      <textarea
+        id="variables"
+        name="variables"
+        rows="8"
+        placeholder="Customer satisfaction&#10;Purchase frequency&#10;Price sensitivity"
+      >{{ variables }}</textarea>
+      {% if error %}
+        <p class="error">{{ error }}</p>
+      {% endif %}
+      <button class="button primary" type="submit">Generate Questionnaire</button>
+    </form>
+  </section>
+
+  {% if questions %}
+    <section class="card">
+      <h2>Generated Questions</h2>
+      <ol class="question-list">
+        {% for question in questions %}
+          <li>
+            <div class="question-text">{{ question["question"] }}</div>
+            <div class="question-meta">
+              <span class="pill">{{ question["type"] }}</span>
+              <span class="pill subtle">{{ question["category"] }}</span>
+            </div>
+            {% if question.get("options") %}
+              <ul class="option-list">
+                {% for option in question["options"] %}
+                  <li>{{ option }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ol>
+    </section>
+  {% endif %}
+{% endblock %}
