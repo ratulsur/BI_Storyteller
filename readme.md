@@ -1,88 +1,110 @@
-# Overview
+# BI StoryTeller
 
-BI StoryTeller is an AI-powered data analysis platform built with Streamlit that enables users to conduct comprehensive data analysis through a guided workflow. The platform starts with business problem definition, automatically extracts relevant variables, generates custom questionnaires, collects data via Google Sheets integration, processes and analyzes the data, presents insights through interactive dashboards, creates professional PowerPoint presentations, and provides AI chat assistance.
+An AI-powered business-analysis platform that takes a user from a raw business problem all the
+way to a finished PowerPoint — defining the problem, generating a questionnaire, collecting and
+cleaning data, analyzing it, visualizing insights, and producing a presentation, with an AI chat
+assistant throughout. Built end-to-end in Python with Streamlit, Groq/Llama, and PostgreSQL.
 
-The application follows a step-by-step methodology: problem definition → variable extraction → questionnaire generation → data collection → preprocessing → analysis → dashboard visualization → presentation creation → AI-powered chat insights. Each step builds upon the previous one, creating a seamless end-to-end data analysis pipeline.
+## What it does
 
-# User Preferences
+BI StoryTeller turns the full market-research workflow into a guided, eight-step pipeline. Each
+step feeds the next, so a non-technical user can go from "here's my business question" to a
+client-ready deck without leaving the app:
 
-Preferred communication style: Simple, everyday language.
+```
+1. Problem definition   →  2. Variable extraction   →  3. Questionnaire generation
+        →  4. Data collection  →  5. Preprocessing  →  6. Analysis
+        →  7. Dashboard + PowerPoint  →  8. AI chat insights
+```
 
-# System Architecture
+LLM-powered steps (variable extraction, questionnaire and presentation generation, chat) run on
+Groq-hosted Llama models; data collection integrates Google Sheets; analysis and visualization use
+pandas, scikit-learn, scipy, and Plotly; and the deck is assembled with python-pptx, including
+AI-generated SVG graphics.
 
-## Frontend Architecture
-- **Framework**: Streamlit with multi-page architecture using pages/ directory structure
-- **Navigation**: Page-based workflow with sequential progression (app.py → 8 specialized pages)
-- **State Management**: Streamlit session state for maintaining user context across pages including business problems, variables, questionnaires, data, analysis results, and presentation assets
-- **UI Components**: Wide layout with sidebar navigation, interactive forms, real-time metrics, responsive columns, and presentation builder interface
+## Key features
 
-## Backend Architecture
-- **Core Processing**: Modular utility classes in utils/ directory for separated concerns
-- **AI Integration**: GroqClient for LLM-powered variable extraction, questionnaire generation, presentation content, and chat assistance using Llama models
-- **Database Layer**: DatabaseClient handles PostgreSQL connections, table creation, and data operations
-- **Form Engine**: FormGenerator creates interactive Streamlit forms with database integration
-- **Data Pipeline**: DataProcessor handles cleaning, preprocessing, outlier removal, normalization, and encoding
-- **Visualization Engine**: Visualizer creates interactive plots using Plotly for distributions, correlations, and statistical charts
-- **Presentation Engine**: PresentationGenerator creates PowerPoint presentations with template selection, custom slides, and AI-generated SVG images
-- **Image Generation**: ImageGenerator creates professional SVG graphics using Groq AI for presentation enhancement
+- **End-to-end pipeline** — problem framing to finished presentation in one guided flow.
+- **AI-assisted research design** — automatic variable extraction and questionnaire generation
+  from a plain-language business problem.
+- **Flexible data collection** — PostgreSQL-backed interactive forms, with Google Sheets and
+  CSV/JSON import/export as alternatives.
+- **Automated analysis** — cleaning, outlier removal, normalization, encoding, correlation and
+  statistical analysis.
+- **Interactive dashboards** — Plotly visualizations for distributions, correlations, and trends.
+- **One-click presentations** — PowerPoint generation with five professional templates and
+  AI-generated SVG imagery.
+- **Conversational insights** — a built-in AI chat assistant grounded in the analyzed data.
 
-## Data Storage Solutions
-- **Primary Collection**: PostgreSQL database integration for questionnaire responses with automatic table creation
-- **Interactive Forms**: Streamlit-based forms with real-time validation and database storage
-- **Session Storage**: Streamlit session state for temporary data persistence during user sessions
-- **Data Formats**: Pandas DataFrames for in-memory data manipulation and analysis
-- **Legacy Support**: Google Sheets integration via gspread (alternative collection method)
-- **File Support**: CSV/JSON upload/download capabilities for data import/export
+## Architecture
 
-## Authentication and Authorization
-- **Google Sheets Access**: Service account credentials via environment variables or Streamlit secrets
-- **API Authentication**: Groq API key management through environment variables
-- **Access Control**: Public Google Sheets sharing for questionnaire form submissions
+Modular design with clear separation of concerns under `utils/`, an API layer in `api/`, and
+infrastructure/config separated out:
 
-## External Service Integrations
-- **Groq AI**: LLM API for natural language processing, variable extraction, conversational AI, and image description generation
-- **Google Sheets API**: Real-time data collection and storage for survey responses
-- **Google Drive API**: Document management and sharing for questionnaire deployment
+| Layer | Responsibility |
+|-------|----------------|
+| Frontend | Streamlit multi-page app (`app.py` + sequential workflow pages), session-state context |
+| AI integration | `GroqClient` — variable extraction, questionnaire/presentation content, chat (Llama) |
+| Data | `DatabaseClient` (PostgreSQL), `DataProcessor` (cleaning/encoding), pandas in-memory |
+| Forms | `FormGenerator` — interactive Streamlit forms wired to the database |
+| Visualization | `Visualizer` — Plotly charts for distributions, correlations, statistics |
+| Presentation | `PresentationGenerator` (python-pptx) + `ImageGenerator` (AI SVG graphics) |
+| Integrations | Google Sheets / Drive (gspread, google-auth) for collection and sharing |
 
-## Recent Changes (August 2025)
-- **PowerPoint Integration**: Added comprehensive presentation builder with template selection, custom slide creation, and AI-powered image generation
-- **AI Image Studio**: Implemented chat-based image generation using Groq AI to create professional SVG graphics for presentations
-- **Template System**: Created 5 professional presentation templates (Modern Business, Clean Minimal, Corporate Blue, Warm Orange, Professional Green)
-- **Presentation Workflow**: Integrated presentation creation into the main analysis pipeline as step 7 of 8
-- **Session State Management**: Enhanced state management to support presentation assets and generated images
+## Stack
 
-The architecture emphasizes modularity with clear separation between AI processing, data handling, visualization, presentation creation, and external integrations, enabling easy maintenance and feature expansion.
+Python · Streamlit · Groq (Llama) · PostgreSQL · pandas · scikit-learn · scipy · Plotly ·
+python-pptx · gspread / Google APIs · Docker
 
-# External Dependencies
+## Setup
 
-## AI and Machine Learning
-- **Groq**: Primary LLM service for variable extraction, questionnaire generation, and chat assistance
-- **TextBlob**: Natural language processing for sentiment analysis and text processing
-- **scikit-learn**: Machine learning utilities for data preprocessing, scaling, and statistical analysis
-- **scipy**: Statistical analysis and hypothesis testing
+```bash
+git clone https://github.com/ratulsur/BI_Storyteller.git
+cd BI_Storyteller
 
-## Data Processing and Visualization
-- **pandas**: Data manipulation and analysis framework
-- **numpy**: Numerical computing and array operations
-- **plotly**: Interactive visualization library for charts, graphs, and dashboards
-- **matplotlib/seaborn**: Additional plotting capabilities for statistical visualizations
+# Dependencies (managed with uv; pip also works)
+uv sync                          # or: pip install -r requirements.txt
 
-## Google Cloud Integration
-- **gspread**: Google Sheets API client for spreadsheet operations
-- **google-auth**: Authentication library for Google service account credentials
-- **Google Sheets API**: Real-time data collection and response storage
-- **Google Drive API**: File sharing and permission management
+# Configure credentials in a .env file (never commit it — it is gitignored):
+#   GROQ_API_KEY=...
+#   DATABASE_URL=postgresql://...
+#   GOOGLE_SERVICE_ACCOUNT=...    # service-account JSON or path, for Sheets
+```
 
-## Web Framework
-- **streamlit**: Core web application framework providing the user interface and hosting platform
+## Run
 
-## Presentation and Document Generation
-- **python-pptx**: PowerPoint presentation creation and manipulation library
-- **Pillow**: Image processing and manipulation for presentation assets
-- **lxml**: XML processing for PowerPoint document structure
+```bash
+streamlit run app.py
+```
 
-## Development Tools
-- **python-dotenv**: Environment variable management for API keys and configuration
-- **json**: Configuration and data serialization for API responses and questionnaire structures
+Or with Docker:
 
-The platform requires active API keys for Groq AI services and Google Cloud service account credentials for Sheets integration. All external dependencies are configured through environment variables for security and deployment flexibility.
+```bash
+docker build -t bi-storyteller .
+docker run -p 8501:8501 --env-file .env bi-storyteller
+```
+
+Then open the app and step through the workflow from problem definition to presentation.
+
+## Project structure
+
+```
+BI_Storyteller/
+├── app.py             Streamlit entry point + workflow pages
+├── api/               API layer
+├── modules/           pipeline modules
+├── utils/             core classes (Groq client, DB, forms, processing, viz, presentation)
+├── config/            configuration
+├── infrastructure/    infra setup
+├── static/ template/  UI assets and presentation templates
+├── tests/             test suite
+├── dockerfile         container build
+├── pyproject.toml     project + dependencies (uv.lock)
+└── requirements.txt
+```
+
+## Notes
+
+Requires active Groq AI credentials and Google Cloud service-account credentials for Sheets
+integration; all secrets are supplied via environment variables. The app was originally
+prototyped on Replit and is containerized for portable deployment.
