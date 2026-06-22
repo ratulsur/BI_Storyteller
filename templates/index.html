@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Build guided business insights with a modern web interface.</h1>
+      <p>
+        This FastAPI-powered front end replaces the previous Streamlit UI, giving you
+        a clean, production-ready interface to generate questionnaires and guide your
+        BI workflow.
+      </p>
+      <div class="hero-actions">
+        <a class="button primary" href="/questionnaire">Generate a questionnaire</a>
+      </div>
+    </div>
+    <div class="hero-card">
+      <h3>Workflow overview</h3>
+      <ul>
+        <li>Define business problem and variables</li>
+        <li>Generate survey questions</li>
+        <li>Collect data and analyze results</li>
+        <li>Build insights and presentations</li>
+      </ul>
+    </div>
+  </section>
+{% endblock %}
